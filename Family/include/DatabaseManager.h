@@ -25,6 +25,7 @@ public:
 
     bool executeQuery(const QString& queryStr, QSqlQuery& query);
     QSqlQuery executeQuery(const QString& queryStr);
+    bool executePreparedQuery(QSqlQuery& query);
 
     bool userExists(const QString& username);
     int getUserId(const QString& username);

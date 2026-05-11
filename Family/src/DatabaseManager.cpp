@@ -67,6 +67,7 @@ bool DatabaseManager::executeSqlFromFile(const QString& filePath)
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "executeSqlFromFile: Cannot open file:" << filePath;
         return false;
     }
 
@@ -82,21 +83,35 @@ bool DatabaseManager::executeSqlFromFile(const QString& filePath)
         }
     }
 
+    qDebug() << "executeSqlFromFile: Total statements to execute:" << sqlStatements.size();
+
+    int stmtCount = 0;
     foreach (QString statement, sqlStatements) {
+        stmtCount++;
+        
         if (statement.startsWith("\\c ")) {
+            qDebug() << "executeSqlFromFile: Skipping \\c command";
             continue;
         }
 
         if (statement.startsWith("DROP DATABASE") || statement.startsWith("CREATE DATABASE")) {
+            qDebug() << "executeSqlFromFile: Skipping DDL statement";
             continue;
         }
 
+        qDebug() << "executeSqlFromFile: Executing statement" << stmtCount << "- first 100 chars:" << statement.left(100);
+        
         QSqlQuery query(m_db);
         if (!query.exec(statement)) {
+            qDebug() << "executeSqlFromFile: SQL execution failed:" << query.lastError().text();
+            qDebug() << "executeSqlFromFile: Failed statement:" << statement;
             return false;
         }
+        
+        qDebug() << "executeSqlFromFile: Statement" << stmtCount << "completed successfully";
     }
 
+    qDebug() << "executeSqlFromFile: All statements executed successfully";
     return true;
 }
 
@@ -112,11 +127,25 @@ bool DatabaseManager::initializeDatabase()
 
     QSqlQuery query(m_db);
 
+    // 检查 users 表是否存在
     if (!query.exec("SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'users'")) {
         return false;
     }
 
+    bool needsInit = false;
     if (query.next() && query.value(0).toInt() == 0) {
+        // users 表不存在，需要初始化
+        needsInit = true;
+    } else {
+        // users 表存在，检查是否有数据
+        query.exec("SELECT COUNT(*) FROM users");
+        if (query.next() && query.value(0).toInt() == 0) {
+            // users 表为空，也需要初始化数据
+            needsInit = true;
+        }
+    }
+
+    if (needsInit) {
         QString schemaPath = QCoreApplication::applicationDirPath() + "/../database/schema.sql";
         if (!QFile::exists(schemaPath)) {
             schemaPath = QCoreApplication::applicationDirPath() + "/database/schema.sql";
@@ -231,18 +260,24 @@ bool DatabaseManager::executeQuery(const QString& queryStr, QSqlQuery& query)
 QSqlQuery DatabaseManager::executeQuery(const QString& queryStr)
 {
     QMutexLocker locker(&m_mutex);
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     if (!query.exec(queryStr)) {
     }
     return query;
 }
 
+bool DatabaseManager::executePreparedQuery(QSqlQuery& query)
+{
+    QMutexLocker locker(&m_mutex);
+    return query.exec();
+}
+
 bool DatabaseManager::userExists(const QString& username)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("SELECT COUNT(*) FROM users WHERE username = ?");
     query.addBindValue(username);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         return query.value(0).toInt() > 0;
     }
     return false;
@@ -250,10 +285,10 @@ bool DatabaseManager::userExists(const QString& username)
 
 int DatabaseManager::getUserId(const QString& username)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("SELECT user_id FROM users WHERE username = ?");
     query.addBindValue(username);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         return query.value(0).toInt();
     }
     return -1;
@@ -261,10 +296,10 @@ int DatabaseManager::getUserId(const QString& username)
 
 bool DatabaseManager::validateUser(const QString& username, const QString& passwordHash)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("SELECT password_hash FROM users WHERE username = ?");
     query.addBindValue(username);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         return query.value(0).toString() == passwordHash;
     }
     return false;
@@ -272,17 +307,17 @@ bool DatabaseManager::validateUser(const QString& username, const QString& passw
 
 bool DatabaseManager::createUser(const QString& username, const QString& passwordHash)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
     query.addBindValue(username);
     query.addBindValue(passwordHash);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 QVariantList DatabaseManager::getGenealogiesForUser(int userId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT g.genealogy_id, g.name, g.surname, g.compile_time,
                g.description, g.creator_id, ug.role
@@ -292,7 +327,7 @@ QVariantList DatabaseManager::getGenealogiesForUser(int userId)
         ORDER BY g.name
     )");
     query.addBindValue(userId);
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["genealogy_id"] = query.value(0);
@@ -328,7 +363,7 @@ QVariantList DatabaseManager::getAllGenealogies()
 bool DatabaseManager::createGenealogy(int creatorId, const QString& name, const QString& surname,
                                       const QString& compileTime, const QString& description)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("INSERT INTO genealogies (name, surname, compile_time, description, creator_id) VALUES (?, ?, ?, ?, ?)");
     query.addBindValue(name);
     query.addBindValue(surname);
@@ -336,41 +371,41 @@ bool DatabaseManager::createGenealogy(int creatorId, const QString& name, const 
     query.addBindValue(description);
     query.addBindValue(creatorId);
 
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         int genealogyId = query.lastInsertId().toInt();
         query.prepare("INSERT INTO user_genealogy (user_id, genealogy_id, role) VALUES (?, ?, 'creator')");
         query.addBindValue(creatorId);
         query.addBindValue(genealogyId);
-        return executeQuery(query.lastQuery(), query);
+        return executePreparedQuery(query);
     }
     return false;
 }
 
 bool DatabaseManager::deleteGenealogy(int genealogyId)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("DELETE FROM genealogies WHERE genealogy_id = ?");
     query.addBindValue(genealogyId);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 bool DatabaseManager::updateGenealogy(int genealogyId, const QString& name, const QString& surname,
                                        const QString& compileTime, const QString& description)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("UPDATE genealogies SET name = ?, surname = ?, compile_time = ?, description = ? WHERE genealogy_id = ?");
     query.addBindValue(name);
     query.addBindValue(surname);
     query.addBindValue(compileTime);
     query.addBindValue(description);
     query.addBindValue(genealogyId);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 QVariantList DatabaseManager::getMembers(int genealogyId, int limit, int offset)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT person_id, name, gender, birth_year, death_year, biography,
                generation, genealogy_id, birth_family_id
@@ -382,7 +417,7 @@ QVariantList DatabaseManager::getMembers(int genealogyId, int limit, int offset)
     query.addBindValue(genealogyId);
     query.addBindValue(limit);
     query.addBindValue(offset);
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["person_id"] = query.value(0);
@@ -403,7 +438,7 @@ QVariantList DatabaseManager::getMembers(int genealogyId, int limit, int offset)
 QVariantList DatabaseManager::searchMembersByName(const QString& namePattern, int genealogyId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     if (genealogyId > 0) {
         query.prepare(R"(
             SELECT person_id, name, gender, birth_year, death_year, generation, genealogy_id
@@ -424,7 +459,7 @@ QVariantList DatabaseManager::searchMembersByName(const QString& namePattern, in
         )");
         query.addBindValue(QString("%") + namePattern + "%");
     }
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["person_id"] = query.value(0);
@@ -443,7 +478,7 @@ QVariantList DatabaseManager::searchMembersByName(const QString& namePattern, in
 QVariantList DatabaseManager::getMember(int personId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT p.person_id, p.name, p.gender, p.birth_year, p.death_year,
                p.biography, p.generation, p.genealogy_id, p.birth_family_id,
@@ -455,7 +490,7 @@ QVariantList DatabaseManager::getMember(int personId)
         WHERE p.person_id = ?
     )");
     query.addBindValue(personId);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         QVariantMap map;
         map["person_id"] = query.value(0);
         map["name"] = query.value(1);
@@ -476,7 +511,7 @@ QVariantList DatabaseManager::getMember(int personId)
 int DatabaseManager::addMember(const QString& name, QChar gender, int birthYear, int deathYear,
                                  const QString& biography, int generation, int genealogyId, int birthFamilyId)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         INSERT INTO persons (name, gender, birth_year, death_year, biography, generation, genealogy_id, birth_family_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -489,20 +524,18 @@ int DatabaseManager::addMember(const QString& name, QChar gender, int birthYear,
     query.addBindValue(generation);
     query.addBindValue(genealogyId);
     query.addBindValue(birthFamilyId > 0 ? birthFamilyId : QVariant());
-
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         return query.lastInsertId().toInt();
     }
     return -1;
 }
 
 bool DatabaseManager::updateMember(int personId, const QString& name, QChar gender, int birthYear,
-                                    int deathYear, const QString& biography, int generation)
+                                   int deathYear, const QString& biography, int generation)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
-        UPDATE persons SET name = ?, gender = ?, birth_year = ?, death_year = ?,
-        biography = ?, generation = ?
+        UPDATE persons SET name = ?, gender = ?, birth_year = ?, death_year = ?, biography = ?, generation = ?
         WHERE person_id = ?
     )");
     query.addBindValue(name);
@@ -512,21 +545,21 @@ bool DatabaseManager::updateMember(int personId, const QString& name, QChar gend
     query.addBindValue(biography);
     query.addBindValue(generation);
     query.addBindValue(personId);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 bool DatabaseManager::deleteMember(int personId)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("DELETE FROM persons WHERE person_id = ?");
     query.addBindValue(personId);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 QVariantList DatabaseManager::getFamilyMembers(int personId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT p.person_id, p.name, p.gender, p.birth_year, p.death_year,
                p.generation, pc.family_id
@@ -537,7 +570,7 @@ QVariantList DatabaseManager::getFamilyMembers(int personId)
         )
     )");
     query.addBindValue(personId);
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["person_id"] = query.value(0);
@@ -556,7 +589,7 @@ QVariantList DatabaseManager::getFamilyMembers(int personId)
 QVariantList DatabaseManager::getSpouseAndChildren(int personId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT DISTINCT p.person_id, p.name, p.gender, p.birth_year, p.generation,
                CASE WHEN f.husband_id = ? THEN '配偶' ELSE '子女' END as relation_type
@@ -570,7 +603,7 @@ QVariantList DatabaseManager::getSpouseAndChildren(int personId)
     query.addBindValue(personId);
     query.addBindValue(personId);
     query.addBindValue(personId);
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["person_id"] = query.value(0);
@@ -642,7 +675,7 @@ QVariantList DatabaseManager::findRelationship(int person1Id, int person2Id)
 QVariantList DatabaseManager::getGenderStats(int genealogyId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     if (genealogyId > 0) {
         query.prepare(R"(
             SELECT gender, COUNT(*) as count
@@ -654,7 +687,7 @@ QVariantList DatabaseManager::getGenderStats(int genealogyId)
     } else {
         query.prepare("SELECT gender, COUNT(*) as count FROM persons GROUP BY gender");
     }
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["gender"] = query.value(0);
@@ -668,7 +701,7 @@ QVariantList DatabaseManager::getGenderStats(int genealogyId)
 QVariantList DatabaseManager::getGenerationStats(int genealogyId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     if (genealogyId > 0) {
         query.prepare(R"(
             SELECT generation, COUNT(*) as count
@@ -681,7 +714,7 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
     } else {
         query.prepare("SELECT generation, COUNT(*) as count FROM persons GROUP BY generation ORDER BY generation");
     }
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["generation"] = query.value(0);
@@ -694,18 +727,18 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
 
 bool DatabaseManager::inviteUser(int genealogyId, int userId, const QString& role)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("INSERT INTO user_genealogy (user_id, genealogy_id, role) VALUES (?, ?, ?)");
     query.addBindValue(userId);
     query.addBindValue(genealogyId);
     query.addBindValue(role);
-    return executeQuery(query.lastQuery(), query);
+    return executePreparedQuery(query);
 }
 
 QVariantList DatabaseManager::getFamilyById(int familyId)
 {
     QVariantList result;
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT f.family_id, f.husband_id, f.wife_id, f.genealogy_id, f.marriage_year,
                hp.name as husband_name, wp.name as wife_name
@@ -715,7 +748,7 @@ QVariantList DatabaseManager::getFamilyById(int familyId)
         WHERE f.family_id = ?
     )");
     query.addBindValue(familyId);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         QVariantMap map;
         map["family_id"] = query.value(0);
         map["husband_id"] = query.value(1);
@@ -731,7 +764,7 @@ QVariantList DatabaseManager::getFamilyById(int familyId)
 
 int DatabaseManager::createFamily(int husbandId, int wifeId, int genealogyId, int marriageYear)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare(R"(
         INSERT INTO families (husband_id, wife_id, genealogy_id, marriage_year)
         VALUES (?, ?, ?, ?)
@@ -740,7 +773,7 @@ int DatabaseManager::createFamily(int husbandId, int wifeId, int genealogyId, in
     query.addBindValue(wifeId > 0 ? wifeId : QVariant());
     query.addBindValue(genealogyId);
     query.addBindValue(marriageYear > 0 ? marriageYear : QVariant());
-    if (executeQuery(query.lastQuery(), query)) {
+    if (executePreparedQuery(query)) {
         return query.lastInsertId().toInt();
     }
     return -1;
@@ -748,11 +781,11 @@ int DatabaseManager::createFamily(int husbandId, int wifeId, int genealogyId, in
 
 bool DatabaseManager::isUserInGenealogy(int userId, int genealogyId)
 {
-    QSqlQuery query;
+    QSqlQuery query(m_db);
     query.prepare("SELECT COUNT(*) FROM user_genealogy WHERE user_id = ? AND genealogy_id = ?");
     query.addBindValue(userId);
     query.addBindValue(genealogyId);
-    if (executeQuery(query.lastQuery(), query) && query.next()) {
+    if (executePreparedQuery(query) && query.next()) {
         return query.value(0).toInt() > 0;
     }
     return false;

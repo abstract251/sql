@@ -46,6 +46,9 @@ void LoginDialog::onLoginButtonClicked()
     QString password = ui->passwordLineEdit->text();
     QString passwordHash = QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
 
+    qDebug() << "Login attempt with username:" << username;
+    qDebug() << "Password hash:" << passwordHash;
+
     if (DatabaseManager::instance().validateUser(username, passwordHash)) {
         int userId = DatabaseManager::instance().getUserId(username);
         m_user = User(userId, username);
@@ -53,6 +56,7 @@ void LoginDialog::onLoginButtonClicked()
         emit loginSuccess(m_user);
         accept();
     } else {
+        qDebug() << "Login failed - invalid username or password";
         QMessageBox::warning(this, "登录失败", "用户名或密码错误!");
         ui->passwordLineEdit->clear();
         ui->passwordLineEdit->setFocus();

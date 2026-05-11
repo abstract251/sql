@@ -84,7 +84,6 @@ void RelationshipQueryWidget::onSearchRelationship()
 
     QVariantMap relMap = relationship.first().toMap();
     QString commonAncestorName = relMap["common_ancestor_name"].toString();
-    int ancestorGen = relMap["generation"].toInt();
 
     QString path1 = relMap["path_to_person1"].toString();
     QString path2 = relMap["path_to_person2"].toString();
