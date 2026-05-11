@@ -111,16 +111,8 @@ void MainWindow::createMenuBar()
     QAction* aboutAction = new QAction("关于(&A)", this);
     connect(aboutAction, &QAction::triggered, this, [this]() {
         QMessageBox::about(this, "关于",
-            "寻根溯源 - 族谱管理系统\n\n"
-            "版本: 1.0\n"
-            "基于Qt5开发的族谱管理应用\n\n"
-            "功能:\n"
-            "- 用户注册登录\n"
-            "- 族谱管理\n"
-            "- 成员管理\n"
-            "- 树形预览\n"
-            "- 祖先查询\n"
-            "- 亲缘关系查询");
+            "寻根溯源-族谱管理系统\n\n"
+            "Version beta1.0\n");
     });
     helpMenu->addAction(aboutAction);
 }
