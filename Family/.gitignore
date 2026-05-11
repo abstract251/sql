@@ -1,0 +1,73 @@
+# Qt Creator 本地配置
+*.pro.user
+*.pro.user.*
+.qtcreator/
+
+# 编译生成目录（根据你的 .pro 文件中的设置）
+bin/
+build/
+debug/
+release/
+*.autosave/
+
+# 临时编译文件
+Makefile
+Makefile.*
+*.make
+*.moc
+*.pdb
+*.o
+*.obj
+*.a
+*.lib
+moc_*.cpp
+moc_*.h
+ui_*.h
+qrc_*.cpp
+
+# VS2022 相关（如果也会在项目中产生）
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+
+# Qt 生成的中间文件
+moc_*.cpp
+moc_*.h
+moc_*.cxx
+ui_*.h
+qrc_*.cpp
+*.qmake.stash
+*.qmake.cache
+
+# Qt 对象脚本文件
+object_script.*
+*.exp
+*.ilk
+
+# 可执行文件
+FamilyGenealogy.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 构建日志
+*.log
+build.log
+
+# Visual Studio 相关
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.opensdf
+*.sdf
+
+# Qt Creator 项目文件
+!.pro
+!.pri
