@@ -3,6 +3,9 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QDebug>
+#include <QSettings>
+#include <QDir>
+#include <QFile>
 #include "MainWindow.h"
 #include "DatabaseManager.h"
 
@@ -12,13 +15,32 @@ int main(int argc, char *argv[])
     app.setApplicationName("寻根溯源 - 族谱管理系统");
     app.setApplicationVersion("1.0");
     app.setStyle("fusion");
+    app.setOrganizationName("DatabaseLab");
+
+    // 从配置文件读取数据库连接参数
+    QSettings settings(app.applicationDirPath() + "/config.ini", QSettings::IniFormat);
+    QString host = settings.value("Database/Host", "localhost").toString();
+    int port = settings.value("Database/Port", 5432).toInt();
+    QString dbName = settings.value("Database/Name", "family_genealogy").toString();
+    QString userName = settings.value("Database/User", "postgres").toString();
+    QString password = settings.value("Database/Password", "123456").toString();
+
+    // 如果配置文件不存在，创建一个默认配置
+    if (!QFile::exists(app.applicationDirPath() + "/config.ini")) {
+        settings.setValue("Database/Host", host);
+        settings.setValue("Database/Port", port);
+        settings.setValue("Database/Name", dbName);
+        settings.setValue("Database/User", userName);
+        settings.setValue("Database/Password", password);
+        settings.sync();
+    }
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("family_genealogy");
-    db.setUserName("postgres");
-    db.setPassword("123456");
-    db.setPort(5432);
+    db.setHostName(host);
+    db.setPort(port);
+    db.setDatabaseName(dbName);
+    db.setUserName(userName);
+    db.setPassword(password);
 
     DatabaseManager::instance().setDatabase(db);
 

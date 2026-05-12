@@ -200,11 +200,6 @@ bool DatabaseManager::initializeDatabase()
                 "genealogy_id INT NOT NULL REFERENCES genealogies(genealogy_id) ON DELETE CASCADE ON UPDATE CASCADE, "
                 "birth_family_id INT REFERENCES families(family_id) ON DELETE SET NULL ON UPDATE CASCADE)",
 
-                "CREATE TABLE IF NOT EXISTS parent_child ("
-                "family_id INT NOT NULL REFERENCES families(family_id) ON DELETE CASCADE ON UPDATE CASCADE, "
-                "child_id INT NOT NULL REFERENCES persons(person_id) ON DELETE CASCADE ON UPDATE CASCADE, "
-                "PRIMARY KEY (family_id, child_id))",
-
                 "INSERT INTO users (username, password_hash, email) VALUES "
                 "('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin@example.com') "
                 "ON CONFLICT (username) DO NOTHING",
@@ -252,8 +247,10 @@ bool DatabaseManager::executeQuery(const QString& queryStr, QSqlQuery& query)
 {
     QMutexLocker locker(&m_mutex);
     if (!query.exec(queryStr)) {
+        setLastError(query.lastError().text());
         return false;
     }
+    setLastError("");
     return true;
 }
 
@@ -262,6 +259,9 @@ QSqlQuery DatabaseManager::executeQuery(const QString& queryStr)
     QMutexLocker locker(&m_mutex);
     QSqlQuery query(m_db);
     if (!query.exec(queryStr)) {
+        setLastError(query.lastError().text());
+    } else {
+        setLastError("");
     }
     return query;
 }
@@ -269,7 +269,13 @@ QSqlQuery DatabaseManager::executeQuery(const QString& queryStr)
 bool DatabaseManager::executePreparedQuery(QSqlQuery& query)
 {
     QMutexLocker locker(&m_mutex);
-    return query.exec();
+    bool result = query.exec();
+    if (!result) {
+        setLastError(query.lastError().text());
+    } else {
+        setLastError("");
+    }
+    return result;
 }
 
 bool DatabaseManager::userExists(const QString& username)
@@ -562,26 +568,22 @@ QVariantList DatabaseManager::getFamilyMembers(int personId)
     QSqlQuery query(m_db);
     query.prepare(R"(
         SELECT p.person_id, p.name, p.gender, p.birth_year, p.death_year,
-               p.generation, pc.family_id
+               p.generation, f.family_id
         FROM persons p
-        JOIN parent_child pc ON p.person_id = pc.child_id
-        WHERE pc.family_id = (
-            SELECT family_id FROM parent_child WHERE child_id = ?
-        )
+        LEFT JOIN families f ON p.birth_family_id = f.family_id
+        WHERE p.person_id = ?
     )");
     query.addBindValue(personId);
-    if (executePreparedQuery(query)) {
-        while (query.next()) {
-            QVariantMap map;
-            map["person_id"] = query.value(0);
-            map["name"] = query.value(1);
-            map["gender"] = query.value(2);
-            map["birth_year"] = query.value(3);
-            map["death_year"] = query.value(4);
-            map["generation"] = query.value(5);
-            map["family_id"] = query.value(6);
-            result.append(map);
-        }
+    if (executePreparedQuery(query) && query.next()) {
+        QVariantMap map;
+        map["person_id"] = query.value(0);
+        map["name"] = query.value(1);
+        map["gender"] = query.value(2);
+        map["birth_year"] = query.value(3);
+        map["death_year"] = query.value(4);
+        map["generation"] = query.value(5);
+        map["family_id"] = query.value(6);
+        result.append(map);
     }
     return result;
 }
@@ -590,16 +592,15 @@ QVariantList DatabaseManager::getSpouseAndChildren(int personId)
 {
     QVariantList result;
     QSqlQuery query(m_db);
+    
+    // 查询配偶
     query.prepare(R"(
-        SELECT DISTINCT p.person_id, p.name, p.gender, p.birth_year, p.generation,
-               CASE WHEN f.husband_id = ? THEN '配偶' ELSE '子女' END as relation_type
+        SELECT p.person_id, p.name, p.gender, p.birth_year, p.generation, '配偶' as relation_type
         FROM persons p
-        LEFT JOIN families f ON (f.husband_id = p.person_id OR f.wife_id = p.person_id)
-        LEFT JOIN parent_child pc ON pc.family_id = f.family_id AND pc.child_id = p.person_id
+        JOIN families f ON (f.husband_id = p.person_id OR f.wife_id = p.person_id)
         WHERE (f.husband_id = ? OR f.wife_id = ?)
-        AND p.person_id != ?
+          AND p.person_id != ?
     )");
-    query.addBindValue(personId);
     query.addBindValue(personId);
     query.addBindValue(personId);
     query.addBindValue(personId);
@@ -615,6 +616,29 @@ QVariantList DatabaseManager::getSpouseAndChildren(int personId)
             result.append(map);
         }
     }
+    
+    // 查询子女
+    query.prepare(R"(
+        SELECT p.person_id, p.name, p.gender, p.birth_year, p.generation, '子女' as relation_type
+        FROM persons p
+        JOIN families f ON p.birth_family_id = f.family_id
+        WHERE (f.husband_id = ? OR f.wife_id = ?)
+    )");
+    query.addBindValue(personId);
+    query.addBindValue(personId);
+    if (executePreparedQuery(query)) {
+        while (query.next()) {
+            QVariantMap map;
+            map["person_id"] = query.value(0);
+            map["name"] = query.value(1);
+            map["gender"] = query.value(2);
+            map["birth_year"] = query.value(3);
+            map["generation"] = query.value(4);
+            map["relation_type"] = query.value(5);
+            result.append(map);
+        }
+    }
+    
     return result;
 }
 
