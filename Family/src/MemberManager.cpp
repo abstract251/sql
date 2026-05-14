@@ -52,25 +52,37 @@ void MemberManager::setGenealogyId(int genealogyId)
 
 void MemberManager::refreshMembers()
 {
+    QString queryStr;
+    
     if (m_currentGenealogyId <= 0) {
-        m_memberModel->setQuery("SELECT 1");
-        m_memberModel->setQuery("SELECT person_id, name, gender, birth_year, death_year, generation FROM persons WHERE 1=0");
-        return;
+        // 显示所有成员
+        queryStr = QString(R"(
+            SELECT
+                person_id AS ID,
+                name AS 姓名,
+                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                birth_year AS 出生年,
+                death_year AS 卒年,
+                generation AS 辈分
+            FROM persons
+            ORDER BY generation, birth_year
+            LIMIT 500
+        )");
+    } else {
+        queryStr = QString(R"(
+            SELECT
+                person_id AS ID,
+                name AS 姓名,
+                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                birth_year AS 出生年,
+                death_year AS 卒年,
+                generation AS 辈分
+            FROM persons
+            WHERE genealogy_id = %1
+            ORDER BY generation, birth_year
+            LIMIT 500
+        )").arg(m_currentGenealogyId);
     }
-
-    QString queryStr = QString(R"(
-        SELECT
-            person_id AS ID,
-            name AS 姓名,
-            CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-            birth_year AS 出生年,
-            death_year AS 卒年,
-            generation AS 辈分
-        FROM persons
-        WHERE genealogy_id = %1
-        ORDER BY generation, birth_year
-        LIMIT 500
-    )").arg(m_currentGenealogyId);
 
     m_memberModel->setQuery(queryStr);
     ui->memberTableView->resizeColumnsToContents();
@@ -78,32 +90,38 @@ void MemberManager::refreshMembers()
 
 void MemberManager::searchMembers(const QString& namePattern)
 {
+    QString queryStr;
+    
     if (m_currentGenealogyId <= 0) {
-        return;
+        // 搜索所有成员
+        queryStr = QString(R"(
+            SELECT
+                person_id AS ID,
+                name AS 姓名,
+                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                birth_year AS 出生年,
+                death_year AS 卒年,
+                generation AS 辈分
+            FROM persons
+            WHERE name LIKE '%%1%'
+            ORDER BY name, birth_year
+            LIMIT 100
+        )").arg(namePattern);
+    } else {
+        queryStr = QString(R"(
+            SELECT
+                person_id AS ID,
+                name AS 姓名,
+                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                birth_year AS 出生年,
+                death_year AS 卒年,
+                generation AS 辈分
+            FROM persons
+            WHERE genealogy_id = %1 AND name LIKE '%%2%'
+            ORDER BY name, birth_year
+            LIMIT 100
+        )").arg(m_currentGenealogyId).arg(namePattern);
     }
-
-    QVariantList results = DatabaseManager::instance().searchMembersByName(namePattern, m_currentGenealogyId);
-
-    m_memberModel->setQuery("SELECT 1");
-    m_memberModel->setQuery("SELECT person_id, name, gender, birth_year, death_year, generation FROM persons WHERE 1=0");
-
-    if (results.isEmpty()) {
-        return;
-    }
-
-    QString queryStr = QString(R"(
-        SELECT
-            person_id AS ID,
-            name AS 姓名,
-            CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-            birth_year AS 出生年,
-            death_year AS 卒年,
-            generation AS 辈分
-        FROM persons
-        WHERE genealogy_id = %1 AND name LIKE '%%2%'
-        ORDER BY name, birth_year
-        LIMIT 100
-    )").arg(m_currentGenealogyId).arg(namePattern);
 
     m_memberModel->setQuery(queryStr);
     ui->memberTableView->resizeColumnsToContents();

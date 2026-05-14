@@ -149,8 +149,15 @@ void MainWindow::onLoginSuccess(const User& user)
 
     QVariantList genealogies = DatabaseManager::instance().getGenealogiesForUser(user.id());
     int firstGenealogyId = 0;
+    
     if (!genealogies.isEmpty()) {
         firstGenealogyId = genealogies.first().toMap()["genealogy_id"].toInt();
+    } else if (user.username() == "admin") {
+        // admin 用户即使没有关联的族谱，也可以查看所有族谱的第一个
+        QVariantList allGenealogies = DatabaseManager::instance().getAllGenealogies();
+        if (!allGenealogies.isEmpty()) {
+            firstGenealogyId = allGenealogies.first().toMap()["genealogy_id"].toInt();
+        }
     }
 
     m_dashboardWidget = new DashboardWidget(firstGenealogyId, this);

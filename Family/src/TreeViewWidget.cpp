@@ -42,11 +42,6 @@ void TreeViewWidget::setGenealogyId(int genealogyId)
 
 void TreeViewWidget::refreshTree()
 {
-    if (m_currentGenealogyId <= 0) {
-        m_treeModel->clear();
-        return;
-    }
-
     bool ok;
     int rootId = QInputDialog::getInt(this, "选择根节点",
         "请输入起始成员ID(留空则显示第一代):", 0, 0, 99999999, 1, &ok);
@@ -68,8 +63,12 @@ void TreeViewWidget::refreshTree()
 
     if (m_selectedRootId == 0) {
         QSqlQuery query;
-        query.prepare("SELECT person_id, name FROM persons WHERE genealogy_id = ? AND generation = 1 LIMIT 1");
-        query.addBindValue(m_currentGenealogyId);
+        if (m_currentGenealogyId > 0) {
+            query.prepare("SELECT person_id, name FROM persons WHERE genealogy_id = ? AND generation = 1 LIMIT 1");
+            query.addBindValue(m_currentGenealogyId);
+        } else {
+            query.prepare("SELECT person_id, name FROM persons WHERE generation = 1 LIMIT 1");
+        }
         query.exec();
         if (query.next()) {
             m_selectedRootId = query.value(0).toInt();
