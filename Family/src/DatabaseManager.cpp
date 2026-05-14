@@ -719,18 +719,22 @@ QVariantList DatabaseManager::getSpouseAndChildren(int personId)
 QVariantList DatabaseManager::getAncestors(int personId)
 {
     QVariantList result;
-    QSqlQuery query = executeQuery(QString("SELECT * FROM sp_get_ancestors(%1)").arg(personId));
-    while (query.next()) {
-        QVariantMap map;
-        map["person_id"] = query.value(0);
-        map["name"] = query.value(1);
-        map["gender"] = query.value(2);
-        map["birth_year"] = query.value(3);
-        map["death_year"] = query.value(4);
-        map["generation"] = query.value(5);
-        map["level"] = query.value(6);
-        map["path"] = query.value(7);
-        result.append(map);
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM sp_get_ancestors(:person_id)");
+    query.bindValue(":person_id", personId);
+    if (executePreparedQuery(query)) {
+        while (query.next()) {
+            QVariantMap map;
+            map["person_id"] = query.value(0);
+            map["name"] = query.value(1);
+            map["gender"] = query.value(2);
+            map["birth_year"] = query.value(3);
+            map["death_year"] = query.value(4);
+            map["generation"] = query.value(5);
+            map["level"] = query.value(6);
+            map["path"] = query.value(7);
+            result.append(map);
+        }
     }
     return result;
 }
@@ -738,18 +742,23 @@ QVariantList DatabaseManager::getAncestors(int personId)
 QVariantList DatabaseManager::getDescendants(int personId, int maxDepth)
 {
     QVariantList result;
-    QSqlQuery query = executeQuery(QString("SELECT * FROM sp_get_descendants(%1, %2)").arg(personId).arg(maxDepth));
-    while (query.next()) {
-        QVariantMap map;
-        map["person_id"] = query.value(0);
-        map["name"] = query.value(1);
-        map["gender"] = query.value(2);
-        map["birth_year"] = query.value(3);
-        map["death_year"] = query.value(4);
-        map["generation"] = query.value(5);
-        map["level"] = query.value(6);
-        map["path"] = query.value(7);
-        result.append(map);
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM sp_get_descendants(:person_id, :max_depth)");
+    query.bindValue(":person_id", personId);
+    query.bindValue(":max_depth", maxDepth);
+    if (executePreparedQuery(query)) {
+        while (query.next()) {
+            QVariantMap map;
+            map["person_id"] = query.value(0);
+            map["name"] = query.value(1);
+            map["gender"] = query.value(2);
+            map["birth_year"] = query.value(3);
+            map["death_year"] = query.value(4);
+            map["generation"] = query.value(5);
+            map["level"] = query.value(6);
+            map["path"] = query.value(7);
+            result.append(map);
+        }
     }
     return result;
 }
@@ -757,16 +766,21 @@ QVariantList DatabaseManager::getDescendants(int personId, int maxDepth)
 QVariantList DatabaseManager::findRelationship(int person1Id, int person2Id)
 {
     QVariantList result;
-    QSqlQuery query = executeQuery(QString("SELECT * FROM sp_find_relationship(%1, %2)").arg(person1Id).arg(person2Id));
-    while (query.next()) {
-        QVariantMap map;
-        map["common_ancestor_id"] = query.value(0);
-        map["common_ancestor_name"] = query.value(1);
-        map["generation"] = query.value(2);
-        map["path_to_person1"] = query.value(3);
-        map["path_to_person2"] = query.value(4);
-        map["relationship_type"] = query.value(5);
-        result.append(map);
+    QSqlQuery query(m_db);
+    query.prepare("SELECT * FROM sp_find_relationship(:person1_id, :person2_id)");
+    query.bindValue(":person1_id", person1Id);
+    query.bindValue(":person2_id", person2Id);
+    if (executePreparedQuery(query)) {
+        while (query.next()) {
+            QVariantMap map;
+            map["common_ancestor_id"] = query.value(0);
+            map["common_ancestor_name"] = query.value(1);
+            map["generation"] = query.value(2);
+            map["path_to_person1"] = query.value(3);
+            map["path_to_person2"] = query.value(4);
+            map["relationship_type"] = query.value(5);
+            result.append(map);
+        }
     }
     return result;
 }
