@@ -39,7 +39,6 @@ private slots:
 private:
     void setupUi();
     void createMenuBar();
-    void createToolBar();
     void createStatusBar();
     void createDockWidgets();
     void connectSignals();

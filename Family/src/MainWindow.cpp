@@ -42,7 +42,6 @@ void MainWindow::setupUi()
 {
     resize(1200, 800);
     createMenuBar();
-    createToolBar();
     createStatusBar();
 
     m_centralTabWidget = new QTabWidget(this);
@@ -117,51 +116,7 @@ void MainWindow::createMenuBar()
     helpMenu->addAction(aboutAction);
 }
 
-void MainWindow::createToolBar()
-{
-    QToolBar* toolbar = addToolBar("主工具栏");
-    toolbar->setMovable(false);
 
-    QAction* dashboardAction = new QAction("仪表盘", this);
-    connect(dashboardAction, &QAction::triggered, this, [this]() {
-        if (m_dashboardWidget) m_centralTabWidget->setCurrentWidget(m_dashboardWidget);
-    });
-    toolbar->addAction(dashboardAction);
-
-    toolbar->addSeparator();
-
-    QAction* genealogyAction = new QAction("族谱管理", this);
-    connect(genealogyAction, &QAction::triggered, this, [this]() {
-        if (m_genealogyManager) m_centralTabWidget->setCurrentWidget(m_genealogyManager);
-    });
-    toolbar->addAction(genealogyAction);
-
-    QAction* memberAction = new QAction("成员管理", this);
-    connect(memberAction, &QAction::triggered, this, [this]() {
-        if (m_memberManager) m_centralTabWidget->setCurrentWidget(m_memberManager);
-    });
-    toolbar->addAction(memberAction);
-
-    toolbar->addSeparator();
-
-    QAction* treeAction = new QAction("树形预览", this);
-    connect(treeAction, &QAction::triggered, this, [this]() {
-        if (m_treeViewWidget) m_centralTabWidget->setCurrentWidget(m_treeViewWidget);
-    });
-    toolbar->addAction(treeAction);
-
-    QAction* ancestorAction = new QAction("祖先查询", this);
-    connect(ancestorAction, &QAction::triggered, this, [this]() {
-        if (m_ancestorQueryWidget) m_centralTabWidget->setCurrentWidget(m_ancestorQueryWidget);
-    });
-    toolbar->addAction(ancestorAction);
-
-    QAction* relationAction = new QAction("亲缘查询", this);
-    connect(relationAction, &QAction::triggered, this, [this]() {
-        if (m_relationshipQueryWidget) m_centralTabWidget->setCurrentWidget(m_relationshipQueryWidget);
-    });
-    toolbar->addAction(relationAction);
-}
 
 void MainWindow::createStatusBar()
 {
