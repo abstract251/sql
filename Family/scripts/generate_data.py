@@ -51,7 +51,7 @@ BIOGRAPHY_TEMPLATES = [
     "潜心学问，著述丰富，为后世留下宝贵文化遗产。"
 ]
 
-OUTPUT_DIR = "e:/Practice/QTpractice/Family/database/csv_data"
+OUTPUT_DIR = "e:/Desktop/sql_work/Family/database/csv_data"
 
 
 class FamilyTreeGenerator:

@@ -43,30 +43,35 @@ GenealogyManager::~GenealogyManager()
 
 void GenealogyManager::refreshGenealogies()
 {
-    QVariantList genealogies = DatabaseManager::instance().getGenealogiesForUser(m_currentUser.id());
+    QString queryStr;
+    
+    // admin 用户可以查看所有族谱
+    if (m_currentUser.username() == "admin") {
+        queryStr = QString(R"(
+            SELECT g.genealogy_id, g.name, g.surname,
+                   g.compile_time, g.description,
+                   CASE WHEN g.creator_id = %1 THEN '是' ELSE '否' END AS 是否创建者
+            FROM genealogies g
+            ORDER BY g.name
+        )").arg(m_currentUser.id());
+    } else {
+        QVariantList genealogies = DatabaseManager::instance().getGenealogiesForUser(m_currentUser.id());
 
-    m_genealogyModel->setQuery("SELECT 1");
-    m_genealogyModel->setQuery("SELECT genealogy_id, name, surname, compile_time, description, creator_id FROM genealogies WHERE 1=0");
+        if (genealogies.isEmpty()) {
+            m_genealogyModel->setQuery("SELECT genealogy_id, name, surname, compile_time, description, '否' AS 是否创建者 FROM genealogies WHERE 1=0");
+            return;
+        }
 
-    if (genealogies.isEmpty()) {
-        return;
+        queryStr = QString(R"(
+            SELECT g.genealogy_id, g.name, g.surname,
+                   g.compile_time, g.description,
+                   CASE WHEN g.creator_id = %1 THEN '是' ELSE '否' END AS 是否创建者
+            FROM genealogies g
+            JOIN user_genealogy ug ON g.genealogy_id = ug.genealogy_id
+            WHERE ug.user_id = %1
+            ORDER BY g.name
+        )").arg(m_currentUser.id());
     }
-
-    QList<QVariantMap> rows;
-    for (const QVariant& v : genealogies) {
-        QVariantMap map = v.toMap();
-        rows.append(map);
-    }
-
-    QString queryStr = QString(R"(
-        SELECT g.genealogy_id, g.name, g.surname,
-               g.compile_time, g.description,
-               CASE WHEN g.creator_id = %1 THEN '是' ELSE '否' END AS 是否创建者
-        FROM genealogies g
-        JOIN user_genealogy ug ON g.genealogy_id = ug.genealogy_id
-        WHERE ug.user_id = %1
-        ORDER BY g.name
-    )").arg(m_currentUser.id());
 
     m_genealogyModel->setQuery(queryStr);
     m_genealogyModel->setHeaderData(0, Qt::Horizontal, "ID");

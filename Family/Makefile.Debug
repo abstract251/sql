@@ -19,7 +19,7 @@ CXXFLAGS      = -fno-keep-inline-dllexport -g -Wall -Wextra -Wextra -fexceptions
 INCPATH       = -I. -Iinclude -I../../../Qt/6.9.3/mingw_64/include -I../../../Qt/6.9.3/mingw_64/include/QtWidgets -I../../../Qt/6.9.3/mingw_64/include/QtGui -I../../../Qt/6.9.3/mingw_64/include/QtSql -I../../../Qt/6.9.3/mingw_64/include/QtCore -Ibuild -Ibuild -I/include -I../../../Qt/6.9.3/mingw_64/mkspecs/win32-g++ 
 LINKER      =        g++
 LFLAGS        =        -Wl,-subsystem,windows -mthreads
-LIBS        =        -lpsql E:\Qt\6.9.3\mingw_64\lib\libQt6Widgets.a E:\Qt\6.9.3\mingw_64\lib\libQt6Gui.a E:\Qt\6.9.3\mingw_64\lib\libQt6Sql.a E:\Qt\6.9.3\mingw_64\lib\libQt6Core.a -lmingw32 E:\Qt\6.9.3\mingw_64\lib\libQt6EntryPoint.a -lshell32  
+LIBS        =        E:\Qt\6.9.3\mingw_64\lib\libQt6Widgets.a E:\Qt\6.9.3\mingw_64\lib\libQt6Gui.a E:\Qt\6.9.3\mingw_64\lib\libQt6Sql.a E:\Qt\6.9.3\mingw_64\lib\libQt6Core.a -lmingw32 E:\Qt\6.9.3\mingw_64\lib\libQt6EntryPoint.a -lshell32  
 QMAKE         = E:\Qt\6.9.3\mingw_64\bin\qmake.exe
 DEL_FILE      = del
 CHK_DIR_EXISTS= if not exist
@@ -394,7 +394,7 @@ build/moc_MainWindow.cpp: include/MainWindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qcalendar.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\MainWindow.h -o build\moc_MainWindow.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\MainWindow.h -o build\moc_MainWindow.cpp
 
 build/moc_LoginDialog.cpp: include/LoginDialog.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QDialog \
@@ -610,7 +610,7 @@ build/moc_LoginDialog.cpp: include/LoginDialog.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qcalendar.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\LoginDialog.h -o build\moc_LoginDialog.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\LoginDialog.h -o build\moc_LoginDialog.cpp
 
 build/moc_DashboardWidget.cpp: include/DashboardWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -820,7 +820,7 @@ build/moc_DashboardWidget.cpp: include/DashboardWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qmetaobject.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\DashboardWidget.h -o build\moc_DashboardWidget.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\DashboardWidget.h -o build\moc_DashboardWidget.cpp
 
 build/moc_GenealogyManager.cpp: include/GenealogyManager.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -1035,7 +1035,7 @@ build/moc_GenealogyManager.cpp: include/GenealogyManager.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qcalendar.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\GenealogyManager.h -o build\moc_GenealogyManager.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\GenealogyManager.h -o build\moc_GenealogyManager.cpp
 
 build/moc_MemberManager.cpp: include/MemberManager.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -1245,7 +1245,7 @@ build/moc_MemberManager.cpp: include/MemberManager.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qmetaobject.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\MemberManager.h -o build\moc_MemberManager.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\MemberManager.h -o build\moc_MemberManager.cpp
 
 build/moc_TreeViewWidget.cpp: include/TreeViewWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -1457,7 +1457,7 @@ build/moc_TreeViewWidget.cpp: include/TreeViewWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qmetaobject.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\TreeViewWidget.h -o build\moc_TreeViewWidget.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\TreeViewWidget.h -o build\moc_TreeViewWidget.cpp
 
 build/moc_AncestorQueryWidget.cpp: include/AncestorQueryWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -1669,7 +1669,7 @@ build/moc_AncestorQueryWidget.cpp: include/AncestorQueryWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qmetaobject.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\AncestorQueryWidget.h -o build\moc_AncestorQueryWidget.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\AncestorQueryWidget.h -o build\moc_AncestorQueryWidget.cpp
 
 build/moc_RelationshipQueryWidget.cpp: include/RelationshipQueryWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
@@ -1874,7 +1874,7 @@ build/moc_RelationshipQueryWidget.cpp: include/RelationshipQueryWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qabstractitemmodel.h \
 		build/moc_predefs.h \
 		../../../Qt/6.9.3/mingw_64/bin/moc.exe
-	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Practice/QTpractice/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Practice/QTpractice/Family -IE:/Practice/QTpractice/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\RelationshipQueryWidget.h -o build\moc_RelationshipQueryWidget.cpp
+	E:\Qt\6.9.3\mingw_64\bin\moc.exe $(DEFINES) --include E:/Desktop/sql_work/Family/build/moc_predefs.h -IE:/Qt/6.9.3/mingw_64/mkspecs/win32-g++ -IE:/Desktop/sql_work/Family -IE:/Desktop/sql_work/Family/include -IE:/Qt/6.9.3/mingw_64/include -IE:/Qt/6.9.3/mingw_64/include/QtWidgets -IE:/Qt/6.9.3/mingw_64/include/QtGui -IE:/Qt/6.9.3/mingw_64/include/QtSql -IE:/Qt/6.9.3/mingw_64/include/QtCore -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++ -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/x86_64-w64-mingw32 -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/backward -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include -IE:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed -IE:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include include\RelationshipQueryWidget.h -o build\moc_RelationshipQueryWidget.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -2138,10 +2138,20 @@ build/main.o: src/main.cpp ../../../Qt/6.9.3/mingw_64/include/QtWidgets/QApplica
 		../../../Qt/6.9.3/mingw_64/include/QtSql/QSqlError \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/qsqlerror.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/QDebug \
-		MainWindow.h \
+		include/MainWindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QMainWindow \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qmainwindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qtabwidget.h \
+		../../../Qt/6.9.3/mingw_64/include/QtSql/QSqlQueryModel \
+		../../../Qt/6.9.3/mingw_64/include/QtSql/qsqlquerymodel.h \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/qabstractitemmodel.h \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/QItemSelection \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/qitemselectionmodel.h \
+		include/User.h \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/QString \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/QDateTime \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/qdatetime.h \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/qcalendar.h \
 		include/DatabaseManager.h \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/QSqlQuery \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/qsqlquery.h \
@@ -2751,7 +2761,7 @@ build/Family.o: src/Family.cpp include/Family.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qstringconverter_base.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build\Family.o src\Family.cpp
 
-build/MainWindow.o: src/MainWindow.cpp MainWindow.h \
+build/MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QMainWindow \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qmainwindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -2951,9 +2961,6 @@ build/MainWindow.o: src/MainWindow.cpp MainWindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qlocale.h \
 		../../../Qt/6.9.3/mingw_64/include/QtGui/qguiapplication_platform.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qtabwidget.h \
-		include/LoginDialog.h \
-		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QDialog \
-		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qdialog.h \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/QSqlQueryModel \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/qsqlquerymodel.h \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/qtsqlglobal.h \
@@ -2962,11 +2969,16 @@ build/MainWindow.o: src/MainWindow.cpp MainWindow.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qabstractitemmodel.h \
 		../../../Qt/6.9.3/mingw_64/include/QtSql/qsqldatabase.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qmetaobject.h \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/QItemSelection \
+		../../../Qt/6.9.3/mingw_64/include/QtCore/qitemselectionmodel.h \
 		include/User.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/QString \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/QDateTime \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qdatetime.h \
 		../../../Qt/6.9.3/mingw_64/include/QtCore/qcalendar.h \
+		include/LoginDialog.h \
+		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QDialog \
+		../../../Qt/6.9.3/mingw_64/include/QtWidgets/qdialog.h \
 		include/DashboardWidget.h \
 		../../../Qt/6.9.3/mingw_64/include/QtWidgets/QWidget \
 		include/GenealogyManager.h \
