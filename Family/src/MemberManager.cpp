@@ -214,16 +214,20 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
 
 void MemberManager::onAddMember()
 {
-    if (m_currentGenealogyId <= 0) {
-        QMessageBox::information(this, "提示", "请先选择族谱!");
-        return;
-    }
-
     QDialog dialog(this);
     dialog.setWindowTitle("添加成员");
     dialog.setMinimumWidth(400);
 
     QFormLayout form(&dialog);
+
+    QComboBox genealogyCombo;
+    genealogyCombo.addItem("请选择族谱", 0);
+    QVariantList genealogies = DatabaseManager::instance().getAllGenealogies();
+    for (const QVariant& g : genealogies) {
+        QVariantMap map = g.toMap();
+        genealogyCombo.addItem(map["name"].toString(), map["genealogy_id"]);
+    }
+    form.addRow("族谱:", &genealogyCombo);
 
     QLineEdit nameEdit;
     nameEdit.setPlaceholderText("请输入姓名");
@@ -264,6 +268,12 @@ void MemberManager::onAddMember()
         return;
     }
 
+    int genealogyId = genealogyCombo.currentData().toInt();
+    if (genealogyId <= 0) {
+        QMessageBox::warning(this, "输入错误", "请选择族谱!");
+        return;
+    }
+
     QString name = nameEdit.text().trimmed();
     if (name.isEmpty()) {
         QMessageBox::warning(this, "输入错误", "请输入姓名!");
@@ -277,7 +287,7 @@ void MemberManager::onAddMember()
     int familyId = familyCombo.currentData().toInt();
 
     int personId = DatabaseManager::instance().addMember(
-        name, gender, birthYear, deathYear, QString(), generation, m_currentGenealogyId, familyId);
+        name, gender, birthYear, deathYear, QString(), generation, genealogyId, familyId);
 
     if (personId > 0) {
         QMessageBox::information(this, "成功", "成员添加成功!");
@@ -326,9 +336,8 @@ void MemberManager::onEditMember()
 
     QSpinBox deathYearSpin;
     deathYearSpin.setRange(0, 2100);
-    if (data["death_year"].toInt() > 0) {
-        deathYearSpin.setValue(data["death_year"].toInt());
-    }
+    deathYearSpin.setValue(data["death_year"].toInt() > 0 ? data["death_year"].toInt() : 0);
+    deathYearSpin.setSpecialValueText("在世");
     form.addRow("卒年:", &deathYearSpin);
 
     QSpinBox generationSpin;

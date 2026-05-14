@@ -313,9 +313,18 @@ QSqlQuery DatabaseManager::executeQuery(const QString& queryStr)
 bool DatabaseManager::executePreparedQuery(QSqlQuery& query)
 {
     QMutexLocker locker(&m_mutex);
+    
+    if (!m_db.isOpen()) {
+        qDebug() << "executePreparedQuery: Database connection is not open!";
+        setLastError("数据库连接未打开");
+        return false;
+    }
+    
     bool result = query.exec();
     if (!result) {
-        setLastError(query.lastError().text());
+        QString error = query.lastError().text();
+        setLastError(error);
+        qDebug() << "executePreparedQuery: Query failed -" << error;
     } else {
         setLastError("");
     }
@@ -561,23 +570,37 @@ QVariantList DatabaseManager::getMember(int personId)
 int DatabaseManager::addMember(const QString& name, QChar gender, int birthYear, int deathYear,
                                  const QString& biography, int generation, int genealogyId, int birthFamilyId)
 {
+    qDebug() << "addMember called with:";
+    qDebug() << "  name:" << name;
+    qDebug() << "  gender:" << QString(gender);
+    qDebug() << "  birthYear:" << birthYear;
+    qDebug() << "  deathYear:" << deathYear;
+    qDebug() << "  generation:" << generation;
+    qDebug() << "  genealogyId:" << genealogyId;
+    qDebug() << "  birthFamilyId:" << birthFamilyId;
+    
     QSqlQuery query(m_db);
     query.prepare(R"(
         INSERT INTO persons (name, gender, birth_year, death_year, biography, generation, genealogy_id, birth_family_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     )");
     query.addBindValue(name);
-    query.addBindValue(gender);
-    query.addBindValue(birthYear > 0 ? birthYear : QVariant());
-    query.addBindValue(deathYear > 0 ? deathYear : QVariant());
-    query.addBindValue(biography);
+    query.addBindValue(QString(gender));
+    query.addBindValue(birthYear > 0 ? QVariant(birthYear) : QVariant());
+    query.addBindValue(deathYear > 0 ? QVariant(deathYear) : QVariant());
+    query.addBindValue(biography.isEmpty() ? QVariant() : QVariant(biography));
     query.addBindValue(generation);
     query.addBindValue(genealogyId);
-    query.addBindValue(birthFamilyId > 0 ? birthFamilyId : QVariant());
+    query.addBindValue(birthFamilyId > 0 ? QVariant(birthFamilyId) : QVariant());
+    
     if (executePreparedQuery(query)) {
-        return query.lastInsertId().toInt();
+        int newId = query.lastInsertId().toInt();
+        qDebug() << "addMember: Member" << newId << "added successfully";
+        return newId;
+    } else {
+        qDebug() << "addMember: Failed to add member" << name << "-" << lastError();
+        return -1;
     }
-    return -1;
 }
 
 bool DatabaseManager::updateMember(int personId, const QString& name, QChar gender, int birthYear,
@@ -589,13 +612,20 @@ bool DatabaseManager::updateMember(int personId, const QString& name, QChar gend
         WHERE person_id = ?
     )");
     query.addBindValue(name);
-    query.addBindValue(gender);
-    query.addBindValue(birthYear > 0 ? birthYear : QVariant());
-    query.addBindValue(deathYear > 0 ? deathYear : QVariant());
-    query.addBindValue(biography);
+    query.addBindValue(QString(gender));
+    query.addBindValue(birthYear > 0 ? QVariant(birthYear) : QVariant());
+    query.addBindValue(deathYear > 0 ? QVariant(deathYear) : QVariant());
+    query.addBindValue(biography.isEmpty() ? QVariant() : QVariant(biography));
     query.addBindValue(generation);
     query.addBindValue(personId);
-    return executePreparedQuery(query);
+    
+    if (executePreparedQuery(query)) {
+        qDebug() << "updateMember: Member" << personId << "updated successfully";
+        return true;
+    } else {
+        qDebug() << "updateMember: Failed to update member" << personId << "-" << lastError();
+        return false;
+    }
 }
 
 bool DatabaseManager::deleteMember(int personId)
@@ -773,7 +803,12 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
     QSqlQuery query(m_db);
     if (genealogyId > 0) {
         query.prepare(R"(
-            SELECT generation, COUNT(*) as count
+            SELECT 
+                generation, 
+                COUNT(*) as count,
+                COALESCE(ROUND(AVG(death_year - birth_year) FILTER (WHERE death_year IS NOT NULL AND death_year > 0), 1), 0) as avg_lifespan,
+                MIN(birth_year) as earliest_birth,
+                MAX(birth_year) as latest_birth
             FROM persons
             WHERE genealogy_id = ?
             GROUP BY generation
@@ -781,13 +816,26 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
         )");
         query.addBindValue(genealogyId);
     } else {
-        query.prepare("SELECT generation, COUNT(*) as count FROM persons GROUP BY generation ORDER BY generation");
+        query.prepare(R"(
+            SELECT 
+                generation, 
+                COUNT(*) as count,
+                COALESCE(ROUND(AVG(death_year - birth_year) FILTER (WHERE death_year IS NOT NULL AND death_year > 0), 1), 0) as avg_lifespan,
+                MIN(birth_year) as earliest_birth,
+                MAX(birth_year) as latest_birth
+            FROM persons
+            GROUP BY generation
+            ORDER BY generation
+        )");
     }
     if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
             map["generation"] = query.value(0);
             map["count"] = query.value(1);
+            map["avg_lifespan"] = query.value(2).toString();
+            map["earliest_birth"] = query.value(3);
+            map["latest_birth"] = query.value(4);
             result.append(map);
         }
     }
