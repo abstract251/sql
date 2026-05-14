@@ -735,6 +735,7 @@ QVariantList DatabaseManager::findRelationship(int person1Id, int person2Id)
         map["generation"] = query.value(2);
         map["path_to_person1"] = query.value(3);
         map["path_to_person2"] = query.value(4);
+        map["relationship_type"] = query.value(5);
         result.append(map);
     }
     return result;

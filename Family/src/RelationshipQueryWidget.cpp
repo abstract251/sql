@@ -84,17 +84,7 @@ void RelationshipQueryWidget::onSearchRelationship()
 
     QVariantMap relMap = relationship.first().toMap();
     QString commonAncestorName = relMap["common_ancestor_name"].toString();
-
-    QString path1 = relMap["path_to_person1"].toString();
-    QString path2 = relMap["path_to_person2"].toString();
-
-    QStringList path1Parts = path1.split("->");
-    QStringList path2Parts = path2.split("->");
-
-    int level1 = path1Parts.size() - 1;
-    int level2 = path2Parts.size() - 1;
-
-    QString relationshipType = determineRelationshipType(level1, level2);
+    QString relationshipType = relMap["relationship_type"].toString();
 
     int row = 0;
     m_relationshipModel->insertRow(row);
@@ -105,21 +95,6 @@ void RelationshipQueryWidget::onSearchRelationship()
     m_relationshipModel->setData(m_relationshipModel->index(row, 3), relationshipType);
 
     ui->resultTableView->resizeColumnsToContents();
-}
-
-QString RelationshipQueryWidget::determineRelationshipType(int level1, int level2)
-{
-    if (level1 == 1 && level2 == 1) {
-        return "同胞/兄弟姐妹";
-    } else if (level1 == 1) {
-        return QString("叔侄/姑侄 (相隔%1代)").arg(level2 - 1);
-    } else if (level2 == 1) {
-        return QString("叔侄/姑侄 (相隔%1代)").arg(level1 - 1);
-    } else if (level1 == 2 && level2 == 2) {
-        return "堂兄弟/表兄弟";
-    } else {
-        return QString("远亲 (共同祖先在%1代)").arg(30 - qMin(level1, level2));
-    }
 }
 
 void RelationshipQueryWidget::onClearResults()

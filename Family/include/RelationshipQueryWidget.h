@@ -26,8 +26,6 @@ private slots:
     void onClearResults();
 
 private:
-    QString determineRelationshipType(int level1, int level2);
-
     Ui::RelationshipQueryWidget *ui;
     int m_currentGenealogyId;
     QStandardItemModel* m_relationshipModel;
