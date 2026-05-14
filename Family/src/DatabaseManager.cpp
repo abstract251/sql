@@ -156,7 +156,10 @@ bool DatabaseManager::initializeDatabase()
 
         if (QFile::exists(schemaPath)) {
             locker.unlock();
-            return executeSqlFromFile(schemaPath);
+            bool result = executeSqlFromFile(schemaPath);
+            // 确保 admin 账号存在
+            ensureAdminAccount();
+            return result;
         } else {
             QStringList createTableQueries = {
                 "CREATE TABLE IF NOT EXISTS users ("
@@ -218,9 +221,50 @@ bool DatabaseManager::initializeDatabase()
                 }
             }
         }
+    } else {
+        // users 表已存在且有数据，确保 admin 账号存在
+        ensureAdminAccount();
     }
 
     return true;
+}
+
+void DatabaseManager::ensureAdminAccount()
+{
+    if (!m_db.isOpen()) {
+        qDebug() << "ensureAdminAccount: Database is not open!";
+        return;
+    }
+    
+    // 先检查 admin 用户是否已存在
+    QSqlQuery checkQuery(m_db);
+    checkQuery.prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+    checkQuery.addBindValue("admin");
+    if (checkQuery.exec() && checkQuery.next() && checkQuery.value(0).toInt() > 0) {
+        qDebug() << "ensureAdminAccount: Admin account already exists";
+        return;
+    }
+    
+    // 重置 users 表的自增序列（避免主键冲突）
+    QSqlQuery resetSeqQuery(m_db);
+    resetSeqQuery.exec("SELECT setval('users_user_id_seq', (SELECT MAX(user_id) FROM users))");
+    
+    // 插入 admin 账号，密码为 "123456"
+    // SHA-256("123456") = 8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92
+    QSqlQuery query(m_db);
+    query.prepare(R"(
+        INSERT INTO users (username, password_hash, email) VALUES 
+        (?, '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'admin@example.com')
+    )");
+    query.addBindValue("admin");
+    
+    bool result = query.exec();
+    
+    if (!result) {
+        qDebug() << "ensureAdminAccount: Failed to insert admin account:" << query.lastError().text();
+    } else {
+        qDebug() << "ensureAdminAccount: Admin account created successfully with password '123456'";
+    }
 }
 
 QString DatabaseManager::lastError() const

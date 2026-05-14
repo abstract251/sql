@@ -42,6 +42,15 @@ int main(int argc, char *argv[])
     db.setUserName(userName);
     db.setPassword(password);
 
+    // 先打开数据库连接
+    if (!db.open()) {
+        QString err = db.lastError().text();
+        QMessageBox::critical(nullptr, "数据库连接错误",
+            QString("无法连接到PostgreSQL数据库:\n%1\n\n请确保PostgreSQL服务正在运行。").arg(err));
+        return 1;
+    }
+
+    // 数据库连接打开后再设置给 DatabaseManager
     DatabaseManager::instance().setDatabase(db);
 
     if (!DatabaseManager::instance().checkAndCreateDatabase()) {
@@ -52,13 +61,6 @@ int main(int argc, char *argv[])
                     "2. 数据库连接参数是否正确\n"
                     "3. 用户是否有权限创建数据库\n\n"
                     "错误详情：%1").arg(errorMsg));
-        return 1;
-    }
-
-    if (!db.open()) {
-        QString err = db.lastError().text();
-        QMessageBox::critical(nullptr, "数据库连接错误",
-            QString("无法连接到PostgreSQL数据库:\n%1\n\n请确保PostgreSQL服务正在运行。").arg(err));
         return 1;
     }
 

@@ -74,6 +74,8 @@ private:
     DatabaseManager(const DatabaseManager&) = delete;
     DatabaseManager& operator=(const DatabaseManager&) = delete;
 
+    void ensureAdminAccount();
+
     QSqlDatabase m_db;
     QMutex m_mutex;
     QString m_lastError;
