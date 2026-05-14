@@ -158,15 +158,18 @@ void MemberManager::refreshMembers()
     ui->memberTableView->resizeColumnsToContents();
 }
 
-void MemberManager::searchMembers(const QString& namePattern, int birthYear, int deathYear, int generation)
+void MemberManager::searchMembers(const QString& namePattern, int birthYear, int deathYear, int generation, int memberId)
 {
     QString selectedSurname = ui->surnameComboBox->currentData().toString();
     
     QStringList conditions;
-    QStringList args;
     
     if (m_currentGenealogyId > 0) {
         conditions.append(QString("genealogy_id = %1").arg(m_currentGenealogyId));
+    }
+    
+    if (memberId > 0) {
+        conditions.append(QString("person_id = %1").arg(memberId));
     }
     
     if (!selectedSurname.isEmpty()) {
@@ -280,7 +283,8 @@ void MemberManager::onAddMember()
         return;
     }
 
-    QChar gender = genderCombo.currentData().toChar();
+    QString genderStr = genderCombo.currentData().toString();
+    QChar gender = genderStr.isEmpty() ? 'M' : genderStr.at(0);
     int birthYear = birthYearSpin.value();
     int deathYear = deathYearSpin.value() > 0 ? deathYearSpin.value() : 0;
     int generation = generationSpin.value();
@@ -356,7 +360,8 @@ void MemberManager::onEditMember()
     }
 
     QString name = nameEdit.text().trimmed();
-    QChar gender = genderCombo.currentData().toChar();
+    QString genderStr = genderCombo.currentData().toString();
+    QChar gender = genderStr.isEmpty() ? 'M' : genderStr.at(0);
     int birthYear = birthYearSpin.value();
     int deathYear = deathYearSpin.value() > 0 ? deathYearSpin.value() : 0;
     int generation = generationSpin.value();
@@ -401,8 +406,9 @@ void MemberManager::onSearchButtonClicked()
     int birthYear = ui->birthYearLineEdit->text().trimmed().toInt();
     int deathYear = ui->deathYearLineEdit->text().trimmed().toInt();
     int generation = ui->generationLineEdit->text().trimmed().toInt();
+    int memberId = ui->idLineEdit->text().trimmed().toInt();
     
-    searchMembers(namePattern, birthYear, deathYear, generation);
+    searchMembers(namePattern, birthYear, deathYear, generation, memberId);
 }
 
 void MemberManager::onMemberTableClicked(const QModelIndex& index)
@@ -422,6 +428,7 @@ void MemberManager::onMemberTableDoubleClicked(const QModelIndex& index)
 
 void MemberManager::onClearSearch()
 {
+    ui->idLineEdit->clear();
     ui->searchLineEdit->clear();
     ui->birthYearLineEdit->clear();
     ui->deathYearLineEdit->clear();

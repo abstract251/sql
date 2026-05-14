@@ -579,6 +579,9 @@ int DatabaseManager::addMember(const QString& name, QChar gender, int birthYear,
     qDebug() << "  genealogyId:" << genealogyId;
     qDebug() << "  birthFamilyId:" << birthFamilyId;
     
+    QSqlQuery seqQuery(m_db);
+    seqQuery.exec("SELECT setval('persons_person_id_seq', (SELECT COALESCE(MAX(person_id), 0) FROM persons))");
+    
     QSqlQuery query(m_db);
     query.prepare(R"(
         INSERT INTO persons (name, gender, birth_year, death_year, biography, generation, genealogy_id, birth_family_id)

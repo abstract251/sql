@@ -25,8 +25,6 @@ TreeViewWidget::TreeViewWidget(int genealogyId, QWidget *parent)
     connect(ui->expandAllPushButton, &QPushButton::clicked, this, &TreeViewWidget::onExpandAll);
     connect(ui->collapseAllPushButton, &QPushButton::clicked, this, &TreeViewWidget::onCollapseAll);
     connect(ui->treeView, &QTreeView::clicked, this, &TreeViewWidget::onPersonSelected);
-
-    refreshTree();
 }
 
 TreeViewWidget::~TreeViewWidget()

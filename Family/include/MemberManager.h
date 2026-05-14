@@ -18,7 +18,7 @@ public:
 
     void setGenealogyId(int genealogyId);
     void refreshMembers();
-    void searchMembers(const QString& namePattern, int birthYear = 0, int deathYear = 0, int generation = 0);
+    void searchMembers(const QString& namePattern = "", int birthYear = 0, int deathYear = 0, int generation = 0, int memberId = 0);
 
 signals:
     void memberSelected(int memberId);

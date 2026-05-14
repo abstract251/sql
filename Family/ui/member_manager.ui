@@ -17,6 +17,26 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="idLabel">
+       <property name="text">
+        <string>ID:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="idLineEdit">
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>ID</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="surnameLabel">
        <property name="text">
         <string>姓氏:</string>
