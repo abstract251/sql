@@ -6,6 +6,11 @@
 #include <QCryptographicHash>
 #include <QMessageBox>
 #include <QDebug>
+#include <QTimer>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
@@ -52,7 +57,44 @@ void LoginDialog::onLoginButtonClicked()
     if (DatabaseManager::instance().validateUser(username, passwordHash)) {
         int userId = DatabaseManager::instance().getUserId(username);
         m_user = User(userId, username);
-        QMessageBox::information(this, "登录成功", QString("欢迎, %1!").arg(username));
+        
+        QDialog welcomeDialog(this);
+        welcomeDialog.setWindowTitle("登录成功");
+        welcomeDialog.setFixedSize(300, 120);
+        welcomeDialog.setModal(true);
+        
+        QVBoxLayout layout(&welcomeDialog);
+        QLabel welcomeLabel(QString("欢迎, %1!").arg(username), &welcomeDialog);
+        welcomeLabel.setAlignment(Qt::AlignCenter);
+        welcomeLabel.setStyleSheet("font-size: 16px; font-weight: bold;");
+        layout.addWidget(&welcomeLabel);
+        
+        QLabel countdownLabel("对话框将在 3 秒后自动关闭...", &welcomeDialog);
+        countdownLabel.setAlignment(Qt::AlignCenter);
+        layout.addWidget(&countdownLabel);
+        
+        QPushButton okButton("确定", &welcomeDialog);
+        okButton.setFixedWidth(100);
+        connect(&okButton, &QPushButton::clicked, &welcomeDialog, &QDialog::accept);
+        layout.addWidget(&okButton);
+        layout.setAlignment(&okButton, Qt::AlignCenter);
+        
+        QTimer timer;
+        int remainingSeconds = 3;
+        QObject::connect(&timer, &QTimer::timeout, [&]() {
+            remainingSeconds--;
+            if (remainingSeconds > 0) {
+                countdownLabel.setText(QString("对话框将在 %1 秒后自动关闭...").arg(remainingSeconds));
+            } else {
+                timer.stop();
+                welcomeDialog.accept();
+            }
+        });
+        timer.start(1000);
+        countdownLabel.setText("对话框将在 3 秒后自动关闭...");
+        
+        welcomeDialog.exec();
+        
         emit loginSuccess(m_user);
         accept();
     } else {
