@@ -11,6 +11,7 @@
 #include <QDateEdit>
 #include <QDialogButtonBox>
 #include <QComboBox>
+#include <QSqlQuery>
 #include <QDebug>
 
 MemberManager::MemberManager(int genealogyId, QWidget *parent)
@@ -35,7 +36,9 @@ MemberManager::MemberManager(int genealogyId, QWidget *parent)
     connect(ui->searchPushButton, &QPushButton::clicked, this, &MemberManager::onSearchButtonClicked);
     connect(ui->refreshPushButton, &QPushButton::clicked, this, &MemberManager::refreshMembers);
     connect(ui->clearSearchPushButton, &QPushButton::clicked, this, &MemberManager::onClearSearch);
+    connect(ui->surnameComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MemberManager::onSurnameChanged);
 
+    loadSurnames();
     refreshMembers();
 }
 
@@ -47,81 +50,163 @@ MemberManager::~MemberManager()
 void MemberManager::setGenealogyId(int genealogyId)
 {
     m_currentGenealogyId = genealogyId;
+    loadSurnames();
     refreshMembers();
+}
+
+void MemberManager::loadSurnames()
+{
+    ui->surnameComboBox->clear();
+    ui->surnameComboBox->addItem("全部", "");
+
+    QSqlQuery query(DatabaseManager::instance().database());
+    QString queryStr;
+    
+    if (m_currentGenealogyId > 0) {
+        queryStr = QString(R"(
+            SELECT DISTINCT SUBSTRING(name FROM 1 FOR 1) AS surname, COUNT(*) as cnt
+            FROM persons
+            WHERE genealogy_id = %1
+            GROUP BY SUBSTRING(name FROM 1 FOR 1)
+            ORDER BY cnt DESC
+        )").arg(m_currentGenealogyId);
+    } else {
+        queryStr = R"(
+            SELECT DISTINCT SUBSTRING(name FROM 1 FOR 1) AS surname, COUNT(*) as cnt
+            FROM persons
+            GROUP BY SUBSTRING(name FROM 1 FOR 1)
+            ORDER BY cnt DESC
+        )";
+    }
+
+    if (query.exec(queryStr)) {
+        while (query.next()) {
+            QString surname = query.value(0).toString();
+            int count = query.value(1).toInt();
+            ui->surnameComboBox->addItem(QString("%1 (%2人)").arg(surname).arg(count), surname);
+        }
+    }
 }
 
 void MemberManager::refreshMembers()
 {
     QString queryStr;
+    QString selectedSurname = ui->surnameComboBox->currentData().toString();
     
     if (m_currentGenealogyId <= 0) {
-        // 显示所有成员
-        queryStr = QString(R"(
-            SELECT
-                person_id AS ID,
-                name AS 姓名,
-                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-                birth_year AS 出生年,
-                death_year AS 卒年,
-                generation AS 辈分
-            FROM persons
-            ORDER BY generation, birth_year
-            LIMIT 500
-        )");
+        if (selectedSurname.isEmpty()) {
+            queryStr = QString(R"(
+                SELECT
+                    person_id AS ID,
+                    name AS 姓名,
+                    CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                    birth_year AS 出生年,
+                    death_year AS 卒年,
+                    generation AS 辈分
+                FROM persons
+                ORDER BY generation, birth_year
+                LIMIT 500
+            )");
+        } else {
+            queryStr = QString(R"(
+                SELECT
+                    person_id AS ID,
+                    name AS 姓名,
+                    CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                    birth_year AS 出生年,
+                    death_year AS 卒年,
+                    generation AS 辈分
+                FROM persons
+                WHERE name LIKE '%1%%'
+                ORDER BY generation, birth_year
+                LIMIT 500
+            )").arg(selectedSurname);
+        }
     } else {
-        queryStr = QString(R"(
-            SELECT
-                person_id AS ID,
-                name AS 姓名,
-                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-                birth_year AS 出生年,
-                death_year AS 卒年,
-                generation AS 辈分
-            FROM persons
-            WHERE genealogy_id = %1
-            ORDER BY generation, birth_year
-            LIMIT 500
-        )").arg(m_currentGenealogyId);
+        if (selectedSurname.isEmpty()) {
+            queryStr = QString(R"(
+                SELECT
+                    person_id AS ID,
+                    name AS 姓名,
+                    CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                    birth_year AS 出生年,
+                    death_year AS 卒年,
+                    generation AS 辈分
+                FROM persons
+                WHERE genealogy_id = %1
+                ORDER BY generation, birth_year
+                LIMIT 500
+            )").arg(m_currentGenealogyId);
+        } else {
+            queryStr = QString(R"(
+                SELECT
+                    person_id AS ID,
+                    name AS 姓名,
+                    CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+                    birth_year AS 出生年,
+                    death_year AS 卒年,
+                    generation AS 辈分
+                FROM persons
+                WHERE genealogy_id = %1 AND name LIKE '%2%%'
+                ORDER BY generation, birth_year
+                LIMIT 500
+            )").arg(m_currentGenealogyId).arg(selectedSurname);
+        }
     }
 
     m_memberModel->setQuery(queryStr);
     ui->memberTableView->resizeColumnsToContents();
 }
 
-void MemberManager::searchMembers(const QString& namePattern)
+void MemberManager::searchMembers(const QString& namePattern, int birthYear, int deathYear, int generation)
 {
-    QString queryStr;
+    QString selectedSurname = ui->surnameComboBox->currentData().toString();
     
-    if (m_currentGenealogyId <= 0) {
-        // 搜索所有成员
-        queryStr = QString(R"(
-            SELECT
-                person_id AS ID,
-                name AS 姓名,
-                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-                birth_year AS 出生年,
-                death_year AS 卒年,
-                generation AS 辈分
-            FROM persons
-            WHERE name LIKE '%%1%'
-            ORDER BY name, birth_year
-            LIMIT 100
-        )").arg(namePattern);
-    } else {
-        queryStr = QString(R"(
-            SELECT
-                person_id AS ID,
-                name AS 姓名,
-                CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
-                birth_year AS 出生年,
-                death_year AS 卒年,
-                generation AS 辈分
-            FROM persons
-            WHERE genealogy_id = %1 AND name LIKE '%%2%'
-            ORDER BY name, birth_year
-            LIMIT 100
-        )").arg(m_currentGenealogyId).arg(namePattern);
+    QStringList conditions;
+    QStringList args;
+    
+    if (m_currentGenealogyId > 0) {
+        conditions.append(QString("genealogy_id = %1").arg(m_currentGenealogyId));
     }
+    
+    if (!selectedSurname.isEmpty()) {
+        conditions.append(QString("name LIKE '%1%%'").arg(selectedSurname));
+    }
+    
+    if (!namePattern.isEmpty()) {
+        conditions.append(QString("name LIKE '%%1%'").arg(namePattern));
+    }
+    
+    if (birthYear > 0) {
+        conditions.append(QString("birth_year = %1").arg(birthYear));
+    }
+    
+    if (deathYear > 0) {
+        conditions.append(QString("death_year = %1").arg(deathYear));
+    }
+    
+    if (generation > 0) {
+        conditions.append(QString("generation = %1").arg(generation));
+    }
+    
+    QString whereClause;
+    if (!conditions.isEmpty()) {
+        whereClause = "WHERE " + conditions.join(" AND ");
+    }
+    
+    QString queryStr = QString(R"(
+        SELECT
+            person_id AS ID,
+            name AS 姓名,
+            CASE gender WHEN 'M' THEN '男' ELSE '女' END AS 性别,
+            birth_year AS 出生年,
+            death_year AS 卒年,
+            generation AS 辈分
+        FROM persons
+        %1
+        ORDER BY generation, birth_year
+        LIMIT 500
+    )").arg(whereClause);
 
     m_memberModel->setQuery(queryStr);
     ui->memberTableView->resizeColumnsToContents();
@@ -196,6 +281,7 @@ void MemberManager::onAddMember()
 
     if (personId > 0) {
         QMessageBox::information(this, "成功", "成员添加成功!");
+        loadSurnames();
         refreshMembers();
         emit memberAdded(personId);
     } else {
@@ -268,6 +354,7 @@ void MemberManager::onEditMember()
 
     if (DatabaseManager::instance().updateMember(m_currentMemberId, name, gender, birthYear, deathYear, QString(), generation)) {
         QMessageBox::information(this, "成功", "成员更新成功!");
+        loadSurnames();
         refreshMembers();
         emit memberUpdated(m_currentMemberId);
     } else {
@@ -290,6 +377,7 @@ void MemberManager::onDeleteMember()
         if (DatabaseManager::instance().deleteMember(m_currentMemberId)) {
             QMessageBox::information(this, "成功", "成员删除成功!");
             m_currentMemberId = 0;
+            loadSurnames();
             emit memberDeleted(m_currentMemberId);
             refreshMembers();
         } else {
@@ -301,11 +389,11 @@ void MemberManager::onDeleteMember()
 void MemberManager::onSearchButtonClicked()
 {
     QString namePattern = ui->searchLineEdit->text().trimmed();
-    if (namePattern.isEmpty()) {
-        QMessageBox::information(this, "提示", "请输入要搜索的姓名!");
-        return;
-    }
-    searchMembers(namePattern);
+    int birthYear = ui->birthYearLineEdit->text().trimmed().toInt();
+    int deathYear = ui->deathYearLineEdit->text().trimmed().toInt();
+    int generation = ui->generationLineEdit->text().trimmed().toInt();
+    
+    searchMembers(namePattern, birthYear, deathYear, generation);
 }
 
 void MemberManager::onMemberTableClicked(const QModelIndex& index)
@@ -326,6 +414,15 @@ void MemberManager::onMemberTableDoubleClicked(const QModelIndex& index)
 void MemberManager::onClearSearch()
 {
     ui->searchLineEdit->clear();
+    ui->birthYearLineEdit->clear();
+    ui->deathYearLineEdit->clear();
+    ui->generationLineEdit->clear();
+    refreshMembers();
+}
+
+void MemberManager::onSurnameChanged(int index)
+{
+    Q_UNUSED(index);
     refreshMembers();
 }
 

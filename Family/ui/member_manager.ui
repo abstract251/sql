@@ -17,9 +17,86 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="surnameLabel">
+       <property name="text">
+        <string>姓氏:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="surnameComboBox">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="searchLineEdit">
        <property name="placeholderText">
         <string>输入姓名进行模糊搜索...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="birthYearLabel">
+       <property name="text">
+        <string>出生年:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="birthYearLineEdit">
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>年份</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="deathYearLabel">
+       <property name="text">
+        <string>逝世年:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="deathYearLineEdit">
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>年份</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="generationLabel">
+       <property name="text">
+        <string>辈分:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="generationLineEdit">
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>代</string>
        </property>
       </widget>
      </item>

@@ -163,13 +163,8 @@ void MainWindow::onLoginSuccess(const User& user)
     
     if (!genealogies.isEmpty()) {
         firstGenealogyId = genealogies.first().toMap()["genealogy_id"].toInt();
-    } else if (user.username() == "admin") {
-        // admin 用户即使没有关联的族谱，也可以查看所有族谱的第一个
-        QVariantList allGenealogies = DatabaseManager::instance().getAllGenealogies();
-        if (!allGenealogies.isEmpty()) {
-            firstGenealogyId = allGenealogies.first().toMap()["genealogy_id"].toInt();
-        }
     }
+    // admin 用户 firstGenealogyId 保持为 0，表示查看所有族谱的数据
 
     m_dashboardWidget = new DashboardWidget(firstGenealogyId, this);
     m_centralTabWidget->addTab(m_dashboardWidget, "仪表盘");
