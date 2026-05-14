@@ -28,7 +28,8 @@ SOURCES += \
     src/MemberManager.cpp \
     src/TreeViewWidget.cpp \
     src/AncestorQueryWidget.cpp \
-    src/RelationshipQueryWidget.cpp
+    src/RelationshipQueryWidget.cpp \
+    src/HelpDialog.cpp
 
 # Header files
 HEADERS += \
@@ -44,7 +45,8 @@ HEADERS += \
     include/MemberManager.h \
     include/TreeViewWidget.h \
     include/AncestorQueryWidget.h \
-    include/RelationshipQueryWidget.h
+    include/RelationshipQueryWidget.h \
+    include/HelpDialog.h
 
 # UI files
 FORMS += \

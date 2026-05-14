@@ -27,6 +27,7 @@ set(SOURCES
     src/TreeViewWidget.cpp
     src/AncestorQueryWidget.cpp
     src/RelationshipQueryWidget.cpp
+    src/HelpDialog.cpp
 )
 
 set(HEADERS
@@ -43,6 +44,7 @@ set(HEADERS
     include/TreeViewWidget.h
     include/AncestorQueryWidget.h
     include/RelationshipQueryWidget.h
+    include/HelpDialog.h
 )
 
 set(FORMS

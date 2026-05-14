@@ -7,6 +7,7 @@
 #include "AncestorQueryWidget.h"
 #include "RelationshipQueryWidget.h"
 #include "DatabaseManager.h"
+#include "HelpDialog.h"
 #include "ui_mainwindow.h"
 
 #include <QMenuBar>
@@ -106,6 +107,16 @@ void MainWindow::createMenuBar()
     genealogyMenu->addAction(relationAction);
 
     QMenu* helpMenu = menuBar->addMenu("帮助(&H)");
+
+    QAction* helpAction = new QAction("帮助(&H)", this);
+    helpAction->setShortcut(QKeySequence::HelpContents);
+    connect(helpAction, &QAction::triggered, this, [this]() {
+        HelpDialog helpDialog(this);
+        helpDialog.exec();
+    });
+    helpMenu->addAction(helpAction);
+
+    helpMenu->addSeparator();
 
     QAction* aboutAction = new QAction("关于(&A)", this);
     connect(aboutAction, &QAction::triggered, this, [this]() {
