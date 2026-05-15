@@ -269,9 +269,18 @@ BEGIN
           AND parent.person_id != ac.person_id
           AND position(parent.person_id::TEXT IN ac.path) = 0
     )
-    SELECT person_id, name, gender, birth_year, death_year, generation, ancestor_level, path
-    FROM ancestry_cte WHERE ancestor_level > 0
-    ORDER BY ancestor_level, generation;
+    SELECT 
+        ancestry_cte.person_id, 
+        ancestry_cte.name, 
+        ancestry_cte.gender, 
+        ancestry_cte.birth_year, 
+        ancestry_cte.death_year, 
+        ancestry_cte.generation, 
+        ancestry_cte.ancestor_level AS level, 
+        ancestry_cte.path
+    FROM ancestry_cte 
+    WHERE ancestry_cte.ancestor_level > 0
+    ORDER BY ancestry_cte.ancestor_level, ancestry_cte.generation;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -280,27 +289,36 @@ CREATE OR REPLACE FUNCTION sp_get_descendants(p_person_id INT, max_depth INT DEF
 RETURNS TABLE (
     person_id INT, name VARCHAR(100), gender CHAR(1), birth_year INT,
     death_year INT, generation INT, level INT, path TEXT
-) AS $$
-BEGIN
-    RETURN QUERY
-    WITH RECURSIVE descendants_cte AS (
-        SELECT p.person_id, p.name, p.gender, p.birth_year, p.death_year,
-               p.generation, 0 AS descendant_level, p.person_id::TEXT AS path
-        FROM persons p WHERE p.person_id = p_person_id
-        UNION ALL
-        SELECT child.person_id, child.name, child.gender, child.birth_year, child.death_year,
-               child.generation, dc.descendant_level + 1,
-               dc.path || '->' || child.person_id::TEXT
-        FROM descendants_cte dc
-        JOIN families f ON f.husband_id = dc.person_id OR f.wife_id = dc.person_id
-        JOIN persons child ON child.birth_family_id = f.family_id
-        WHERE dc.descendant_level < max_depth
-          AND position(child.person_id::TEXT IN dc.path) = 0
-    )
-    SELECT person_id, name, gender, birth_year, death_year, generation, descendant_level, path
-    FROM descendants_cte WHERE descendant_level > 0
-    ORDER BY descendant_level, birth_year;
-END;
+) AS $$ 
+BEGIN 
+    RETURN QUERY 
+    WITH RECURSIVE descendants_cte AS ( 
+        SELECT p.person_id, p.name, p.gender, p.birth_year, p.death_year, 
+               p.generation, 0 AS descendant_level, p.person_id::TEXT AS path 
+        FROM persons p WHERE p.person_id = p_person_id 
+        UNION ALL 
+        SELECT child.person_id, child.name, child.gender, child.birth_year, child.death_year, 
+               child.generation, dc.descendant_level + 1, 
+               dc.path || '->' || child.person_id::TEXT 
+        FROM descendants_cte dc 
+        JOIN families f ON f.husband_id = dc.person_id OR f.wife_id = dc.person_id 
+        JOIN persons child ON child.birth_family_id = f.family_id 
+        WHERE dc.descendant_level < max_depth 
+          AND position(child.person_id::TEXT IN dc.path) = 0 
+    ) 
+    SELECT 
+        descendants_cte.person_id, 
+        descendants_cte.name, 
+        descendants_cte.gender, 
+        descendants_cte.birth_year, 
+        descendants_cte.death_year, 
+        descendants_cte.generation, 
+        descendants_cte.descendant_level AS level, 
+        descendants_cte.path 
+    FROM descendants_cte 
+    WHERE descendants_cte.descendant_level > 0 
+    ORDER BY descendants_cte.descendant_level, descendants_cte.birth_year; 
+END; 
 $$ LANGUAGE plpgsql;
 
 -- Find relationship between two persons (spouse, parent-child, or common ancestor)
