@@ -83,36 +83,30 @@ void TreeViewWidget::refreshTree()
 
             QVariantList descendants = DatabaseManager::instance().getDescendants(m_selectedRootId, 10);
 
-            QMap<int, QStandardItem*> generationItems;
-            generationItems[m_selectedRootId] = rootItem;
+            QMap<int, QStandardItem*> personItems;
+            personItems[m_selectedRootId] = rootItem;
 
             for (const QVariant& v : descendants) {
                 QVariantMap descMap = v.toMap();
                 int personId = descMap["person_id"].toInt();
-                int level = descMap["level"].toInt();
                 QChar gender = descMap["gender"].toString().at(0);
 
                 QStandardItem* personItem = createPersonItem(personId, descMap["name"].toString(), gender, descMap["generation"].toInt());
+                personItems[personId] = personItem;
+            }
 
-                QVariantList spouseChildren = DatabaseManager::instance().getSpouseAndChildren(personId);
-                for (const QVariant& sv : spouseChildren) {
-                    QVariantMap spouseMap = sv.toMap();
-                    if (spouseMap["relation_type"].toString() == "子女") {
-                        QStandardItem* childItem = createPersonItem(
-                            spouseMap["person_id"].toInt(),
-                            spouseMap["name"].toString(),
-                            spouseMap["gender"].toString().at(0),
-                            spouseMap["generation"].toInt()
-                        );
-                        personItem->appendRow(childItem);
+            for (const QVariant& v : descendants) {
+                QVariantMap descMap = v.toMap();
+                int personId = descMap["person_id"].toInt();
+                QString path = descMap["path"].toString();
+
+                QStringList pathParts = path.split("->");
+                if (pathParts.size() >= 2) {
+                    int parentId = pathParts[pathParts.size() - 2].toInt();
+                    if (personItems.contains(parentId)) {
+                        personItems[parentId]->appendRow(personItems[personId]);
                     }
                 }
-
-                if (level == 1 && generationItems.contains(m_selectedRootId)) {
-                    generationItems[m_selectedRootId]->appendRow(personItem);
-                }
-
-                generationItems[personId] = personItem;
             }
 
             m_treeModel->appendRow(rootItem);

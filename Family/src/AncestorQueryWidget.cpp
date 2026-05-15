@@ -67,15 +67,10 @@ void AncestorQueryWidget::displayAncestorTree(const QVariantList& ancestors)
     QStandardItem* rootItem = new QStandardItem(QString("祖先链"));
     rootItem->setEditable(false);
 
-    QMap<int, QStandardItem*> levelItems;
-    levelItems[0] = rootItem;
-
-    int currentLevel = -1;
-    QStandardItem* currentParent = rootItem;
+    QMap<int, QStandardItem*> personItems;
 
     for (const QVariant& v : ancestors) {
         QVariantMap map = v.toMap();
-        int level = map["level"].toInt();
         QString name = map["name"].toString();
         QChar gender = map["gender"].toString().at(0);
         int generation = map["generation"].toInt();
@@ -87,16 +82,24 @@ void AncestorQueryWidget::displayAncestorTree(const QVariantList& ancestors)
         personItem->setData(personId, Qt::UserRole + 1);
         personItem->setEditable(false);
 
-        if (level > currentLevel) {
-            if (levelItems.contains(level - 1)) {
-                currentParent = levelItems[level - 1];
-            }
-            currentLevel = level;
-        }
+        personItems[personId] = personItem;
+    }
 
-        currentParent->appendRow(personItem);
-        levelItems[level] = personItem;
-        currentParent = personItem;
+    for (const QVariant& v : ancestors) {
+        QVariantMap map = v.toMap();
+        int personId = map["person_id"].toInt();
+        QString path = map["path"].toString();
+
+        QStringList pathParts = path.split("->");
+        if (pathParts.size() >= 2) {
+            int parentId = pathParts[pathParts.size() - 2].toInt();
+
+            if (personItems.contains(parentId)) {
+                personItems[parentId]->appendRow(personItems[personId]);
+            } else {
+                rootItem->appendRow(personItems[personId]);
+            }
+        }
     }
 
     m_ancestorTreeModel->appendRow(rootItem);

@@ -258,8 +258,48 @@ void MemberManager::onAddMember()
     form.addRow("辈分:", &generationSpin);
 
     QComboBox familyCombo;
-    familyCombo.addItem("无/未知", 0);
+    familyCombo.addItem("请先选择族谱", 0);
     form.addRow("出生家庭:", &familyCombo);
+
+    auto loadFamilies = [&familyCombo](int selectedGenealogyId) {
+        familyCombo.clear();
+        familyCombo.addItem("无/未知", 0);
+        if (selectedGenealogyId > 0) {
+            QSqlQuery familyQuery(DatabaseManager::instance().database());
+            familyQuery.prepare(R"(
+                SELECT f.family_id, CONCAT(COALESCE(hp.name, ''), ' & ', COALESCE(wp.name, '')) AS family_name
+                FROM families f
+                LEFT JOIN persons hp ON f.husband_id = hp.person_id
+                LEFT JOIN persons wp ON f.wife_id = wp.person_id
+                WHERE f.genealogy_id = ?
+                ORDER BY family_id
+            )");
+            familyQuery.addBindValue(selectedGenealogyId);
+            if (familyQuery.exec()) {
+                while (familyQuery.next()) {
+                    int fid = familyQuery.value(0).toInt();
+                    QString fname = familyQuery.value(1).toString();
+                    if (fname.trimmed() == " & ") {
+                        fname = QString("家庭 %1").arg(fid);
+                    }
+                    familyCombo.addItem(fname, fid);
+                }
+            }
+        }
+    };
+
+    QObject::connect(&genealogyCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), [&genealogyCombo, loadFamilies]() {
+        int selectedId = genealogyCombo.currentData().toInt();
+        loadFamilies(selectedId);
+    });
+
+    if (m_currentGenealogyId > 0) {
+        int idx = genealogyCombo.findData(m_currentGenealogyId);
+        if (idx >= 0) {
+            genealogyCombo.setCurrentIndex(idx);
+            loadFamilies(m_currentGenealogyId);
+        }
+    }
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     form.addRow(&buttonBox);
