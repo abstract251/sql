@@ -422,6 +422,10 @@ QVariantList DatabaseManager::getAllGenealogies()
 bool DatabaseManager::createGenealogy(int creatorId, const QString& name, const QString& surname,
                                       const QString& compileTime, const QString& description)
 {
+    // 同步序列以避免重复键错误
+    QSqlQuery seqQuery(m_db);
+    seqQuery.exec("SELECT setval('genealogies_genealogy_id_seq', (SELECT COALESCE(MAX(genealogy_id), 0) FROM genealogies))");
+    
     QSqlQuery query(m_db);
     query.prepare("INSERT INTO genealogies (name, surname, compile_time, description, creator_id) VALUES (?, ?, ?, ?, ?)");
     query.addBindValue(name);
@@ -723,8 +727,8 @@ QVariantList DatabaseManager::getAncestors(int personId)
 {
     QVariantList result;
     QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM sp_get_ancestors(:person_id)");
-    query.bindValue(":person_id", personId);
+    query.prepare("SELECT * FROM sp_get_ancestors(?)");
+    query.addBindValue(personId);
     if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
@@ -746,9 +750,9 @@ QVariantList DatabaseManager::getDescendants(int personId, int maxDepth)
 {
     QVariantList result;
     QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM sp_get_descendants(:person_id, :max_depth)");
-    query.bindValue(":person_id", personId);
-    query.bindValue(":max_depth", maxDepth);
+    query.prepare("SELECT * FROM sp_get_descendants(?, ?)");
+    query.addBindValue(personId);
+    query.addBindValue(maxDepth);
     if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;
@@ -770,9 +774,9 @@ QVariantList DatabaseManager::findRelationship(int person1Id, int person2Id)
 {
     QVariantList result;
     QSqlQuery query(m_db);
-    query.prepare("SELECT * FROM sp_find_relationship(:person1_id, :person2_id)");
-    query.bindValue(":person1_id", person1Id);
-    query.bindValue(":person2_id", person2Id);
+    query.prepare("SELECT * FROM sp_find_relationship(?, ?)");
+    query.addBindValue(person1Id);
+    query.addBindValue(person2Id);
     if (executePreparedQuery(query)) {
         while (query.next()) {
             QVariantMap map;

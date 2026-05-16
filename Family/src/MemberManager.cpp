@@ -154,7 +154,9 @@ void MemberManager::refreshMembers()
         }
     }
 
-    m_memberModel->setQuery(queryStr);
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.exec(queryStr);
+    m_memberModel->setQuery(query);
     ui->memberTableView->resizeColumnsToContents();
 }
 

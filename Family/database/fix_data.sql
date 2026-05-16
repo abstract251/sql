@@ -14,12 +14,12 @@ TRUNCATE TABLE families RESTART IDENTITY CASCADE;
 -- 步骤 3: 重新导入 persons 数据
 -- 注意: CSV 文件路径需要根据实际情况调整
 COPY persons(person_id, name, gender, birth_year, death_year, biography, generation, genealogy_id, birth_family_id)
-FROM 'e:\Desktop\sql_work\Family\database\csv_data\persons.csv'
+FROM 'e:\DevelopProjects\DatabaseLab\code\Family\database\csv_data\persons.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 步骤 4: 重新导入 families 数据
 COPY families(family_id, husband_id, wife_id, genealogy_id, marriage_year)
-FROM 'e:\Desktop\sql_work\Family\database\csv_data\families.csv'
+FROM 'e:\DevelopProjects\DatabaseLab\code\Family\database\csv_data\families.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 步骤 5: 重新启用触发器
@@ -45,7 +45,7 @@ CREATE TEMP TABLE temp_persons_import (
     birth_family_id INT
 );
 
-COPY temp_persons_import FROM 'e:\Desktop\sql_work\Family\database\csv_data\persons.csv' WITH (FORMAT csv, HEADER true);
+COPY temp_persons_import FROM 'e:\DevelopProjects\DatabaseLab\code\Family\database\csv_data\persons.csv' WITH (FORMAT csv, HEADER true);
 
 UPDATE persons p SET generation = t.generation
 FROM temp_persons_import t

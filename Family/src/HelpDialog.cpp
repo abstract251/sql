@@ -66,9 +66,6 @@ void HelpDialog::setupUi()
     contentLayout->addWidget(createFaqItem("删除成员会有什么影响？",
         "删除成员只会删除该成员的信息，不会影响其已建立的父子关系和家庭关系。如果该成员有子女，子女信息仍会保留。"));
 
-    contentLayout->addWidget(createFaqItem("如何导出族谱数据？",
-        "目前系统支持通过数据库备份功能导出数据。您可以使用PostgreSQL的pg_dump工具对数据库进行完整备份。"));
-
     contentLayout->addWidget(createFaqItem("忘记密码怎么办？",
         "如果您忘记了密码，请联系系统管理员。管理员可以在数据库中重置您的密码。"));
 
@@ -77,6 +74,9 @@ void HelpDialog::setupUi()
 
     contentLayout->addWidget(createFaqItem("如何正确设置成员的出生家庭？",
         "每个成员都有一个\"出生家庭\"字段，指向其父母的家庭。这个字段用于确定成员的父子关系和进行祖先追溯查询。请确保正确设置以便正常使用相关功能。"));
+
+    contentLayout->addWidget(createFaqItem("本地数据库不完整导致查询祖先等功能不工作？",
+                                           "请在本地数据库上执行Family\\database目录下的fix_data.sql和update_procedures.sql。"));
 
     contentLayout->addStretch();
 

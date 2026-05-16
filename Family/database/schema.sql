@@ -270,17 +270,17 @@ BEGIN
           AND position(parent.person_id::TEXT IN ac.path) = 0
     )
     SELECT 
-        ancestry_cte.person_id, 
-        ancestry_cte.name, 
-        ancestry_cte.gender, 
-        ancestry_cte.birth_year, 
-        ancestry_cte.death_year, 
-        ancestry_cte.generation, 
-        ancestry_cte.ancestor_level AS level, 
-        ancestry_cte.path
-    FROM ancestry_cte 
-    WHERE ancestry_cte.ancestor_level > 0
-    ORDER BY ancestry_cte.ancestor_level, ancestry_cte.generation;
+        ac.person_id, 
+        ac.name, 
+        ac.gender, 
+        ac.birth_year, 
+        ac.death_year, 
+        ac.generation, 
+        ac.ancestor_level AS level, 
+        ac.path
+    FROM ancestry_cte ac 
+    WHERE ac.ancestor_level > 0
+    ORDER BY ac.ancestor_level, ac.generation;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -307,17 +307,17 @@ BEGIN
           AND position(child.person_id::TEXT IN dc.path) = 0 
     ) 
     SELECT 
-        descendants_cte.person_id, 
-        descendants_cte.name, 
-        descendants_cte.gender, 
-        descendants_cte.birth_year, 
-        descendants_cte.death_year, 
-        descendants_cte.generation, 
-        descendants_cte.descendant_level AS level, 
-        descendants_cte.path 
-    FROM descendants_cte 
-    WHERE descendants_cte.descendant_level > 0 
-    ORDER BY descendants_cte.descendant_level, descendants_cte.birth_year; 
+        dc.person_id, 
+        dc.name, 
+        dc.gender, 
+        dc.birth_year, 
+        dc.death_year, 
+        dc.generation, 
+        dc.descendant_level AS level, 
+        dc.path 
+    FROM descendants_cte dc 
+    WHERE dc.descendant_level > 0 
+    ORDER BY dc.descendant_level, dc.birth_year; 
 END; 
 $$ LANGUAGE plpgsql;
 

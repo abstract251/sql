@@ -50,26 +50,21 @@ void GenealogyManager::refreshGenealogies()
         queryStr = QString(R"(
             SELECT g.genealogy_id, g.name, g.surname,
                    g.compile_time, g.description,
-                   CASE WHEN g.creator_id = %1 THEN '是' ELSE '否' END AS 是否创建者
+                   u.username || '（ID' || u.user_id || '）' AS 创建者
             FROM genealogies g
-            ORDER BY g.name
-        )").arg(m_currentUser.id());
+            JOIN users u ON g.creator_id = u.user_id
+            ORDER BY g.genealogy_id
+        )");
     } else {
-        QVariantList genealogies = DatabaseManager::instance().getGenealogiesForUser(m_currentUser.id());
-
-        if (genealogies.isEmpty()) {
-            m_genealogyModel->setQuery("SELECT genealogy_id, name, surname, compile_time, description, '否' AS 是否创建者 FROM genealogies WHERE 1=0");
-            return;
-        }
-
         queryStr = QString(R"(
             SELECT g.genealogy_id, g.name, g.surname,
                    g.compile_time, g.description,
-                   CASE WHEN g.creator_id = %1 THEN '是' ELSE '否' END AS 是否创建者
+                   u.username || '（ID' || u.user_id || '）' AS 创建者
             FROM genealogies g
             JOIN user_genealogy ug ON g.genealogy_id = ug.genealogy_id
+            JOIN users u ON g.creator_id = u.user_id
             WHERE ug.user_id = %1
-            ORDER BY g.name
+            ORDER BY g.genealogy_id
         )").arg(m_currentUser.id());
     }
 
@@ -303,7 +298,22 @@ void GenealogyManager::onGenealogyTableDoubleClicked(const QModelIndex& index)
     }
 }
 
-bool GenealogyManager::isOwner(int creatorId)
+bool GenealogyManager::isOwner(int genealogyId)
 {
-    return creatorId == m_currentUser.id();
+    // admin 用户有权限编辑/删除所有族谱
+    if (m_currentUser.username() == "admin") {
+        return true;
+    }
+    
+    // 查询族谱的创建者ID
+    QSqlQuery query;
+    query.prepare("SELECT creator_id FROM genealogies WHERE genealogy_id = ?");
+    query.addBindValue(genealogyId);
+    
+    if (query.exec() && query.next()) {
+        int creatorId = query.value(0).toInt();
+        return creatorId == m_currentUser.id();
+    }
+    
+    return false;
 }
