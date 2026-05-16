@@ -161,7 +161,8 @@ void MainWindow::onLoginSuccess(const User& user)
     QVariantList genealogies = DatabaseManager::instance().getGenealogiesForUser(user.id());
     int firstGenealogyId = 0;
     
-    if (!genealogies.isEmpty()) {
+    // 只有非 admin 用户才设置 firstGenealogyId 为第一个族谱 ID
+    if (user.username() != "admin" && !genealogies.isEmpty()) {
         firstGenealogyId = genealogies.first().toMap()["genealogy_id"].toInt();
     }
     // admin 用户 firstGenealogyId 保持为 0，表示查看所有族谱的数据
