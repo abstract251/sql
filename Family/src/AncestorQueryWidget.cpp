@@ -61,10 +61,13 @@ void AncestorQueryWidget::displayAncestorTree(const QVariantList& ancestors)
     m_ancestorTreeModel->clear();
 
     if (ancestors.isEmpty()) {
+        QStandardItem* rootItem = new QStandardItem("祖先链");
+        rootItem->setEditable(false);
+        m_ancestorTreeModel->appendRow(rootItem);
         return;
     }
 
-    QStandardItem* rootItem = new QStandardItem(QString("祖先链"));
+    QStandardItem* rootItem = new QStandardItem("祖先链");
     rootItem->setEditable(false);
 
     QMap<int, QStandardItem*> personItems;
@@ -91,13 +94,12 @@ void AncestorQueryWidget::displayAncestorTree(const QVariantList& ancestors)
         QString path = map["path"].toString();
 
         QStringList pathParts = path.split("->");
-        if (pathParts.size() >= 2) {
+        if (pathParts.size() == 2) {
+            rootItem->appendRow(personItems[personId]);
+        } else if (pathParts.size() > 2) {
             int parentId = pathParts[pathParts.size() - 2].toInt();
-
             if (personItems.contains(parentId)) {
                 personItems[parentId]->appendRow(personItems[personId]);
-            } else {
-                rootItem->appendRow(personItems[personId]);
             }
         }
     }
