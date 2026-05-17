@@ -106,7 +106,8 @@ void TreeViewWidget::loadChildren(QStandardItem* parentItem, int parentId)
             addedIds.insert(childId);
 
             QString name = query.value(1).toString();
-            QChar gender = query.value(2).toString().at(0);
+            QString genderStr = query.value(2).toString();
+            QChar gender = genderStr.isEmpty() ? 'M' : genderStr.at(0);
             int generation = query.value(4).toInt();
 
             QStandardItem* childItem = createPersonItem(childId, name, gender, generation);
