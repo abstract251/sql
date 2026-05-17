@@ -11,6 +11,7 @@ AncestorQueryWidget::AncestorQueryWidget(int genealogyId, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::AncestorQueryWidget)
     , m_currentGenealogyId(genealogyId)
+    , m_startPersonId(0)
 {
     ui->setupUi(this);
 
@@ -23,6 +24,7 @@ AncestorQueryWidget::AncestorQueryWidget(int genealogyId, QWidget *parent)
     connect(ui->searchPushButton, &QPushButton::clicked, this, &AncestorQueryWidget::onSearchAncestors);
     connect(ui->clearPushButton, &QPushButton::clicked, this, &AncestorQueryWidget::onClearResults);
     connect(ui->ancestorTreeView, &QTreeView::clicked, this, &AncestorQueryWidget::onPersonSelected);
+    connect(ui->ancestorTreeView, &QTreeView::expanded, this, &AncestorQueryWidget::onItemExpanded);
 }
 
 AncestorQueryWidget::~AncestorQueryWidget()
@@ -45,67 +47,132 @@ void AncestorQueryWidget::onSearchAncestors()
         return;
     }
 
-    QVariantList ancestors = DatabaseManager::instance().getAncestors(personId);
+    m_startPersonId = personId;
 
-    if (ancestors.isEmpty()) {
-        QMessageBox::information(this, "查询结果", "未找到该成员的祖先信息!");
-        m_ancestorTreeModel->clear();
+    QVariantList member = DatabaseManager::instance().getMember(personId);
+    if (member.isEmpty()) {
+        QMessageBox::information(this, "查询结果", "未找到该成员!");
         return;
     }
 
-    displayAncestorTree(ancestors);
+    displayAncestorTree(member.first().toMap());
 }
 
-void AncestorQueryWidget::displayAncestorTree(const QVariantList& ancestors)
+void AncestorQueryWidget::displayAncestorTree(const QVariantMap& startPerson)
 {
     m_ancestorTreeModel->clear();
+    m_loadedIds.clear();
 
-    if (ancestors.isEmpty()) {
-        QStandardItem* rootItem = new QStandardItem("祖先链");
-        rootItem->setEditable(false);
-        m_ancestorTreeModel->appendRow(rootItem);
-        return;
-    }
+    QString name = startPerson["name"].toString();
+    QString genderStr = startPerson["gender"].toString();
+    QChar gender = genderStr.isEmpty() ? 'M' : genderStr.at(0);
+    int generation = startPerson["generation"].toInt();
+    int personId = startPerson["person_id"].toInt();
 
-    QStandardItem* rootItem = new QStandardItem("祖先链");
+    QString text = QString("%1 (%2) [%3代]").arg(name).arg(gender == 'M' ? "男" : "女").arg(generation);
+    QStandardItem* rootItem = new QStandardItem(text);
+    rootItem->setData(personId, Qt::UserRole + 1);
+    rootItem->setData(true, Qt::UserRole + 2);  // 已加载
     rootItem->setEditable(false);
 
-    QMap<int, QStandardItem*> personItems;
-
-    for (const QVariant& v : ancestors) {
-        QVariantMap map = v.toMap();
-        QString name = map["name"].toString();
-        QChar gender = map["gender"].toString().at(0);
-        int generation = map["generation"].toInt();
-        int personId = map["person_id"].toInt();
-
-        QString text = QString("%1 (%2) [%3代]").arg(name).arg(gender == 'M' ? "男" : "女").arg(generation);
-
-        QStandardItem* personItem = new QStandardItem(text);
-        personItem->setData(personId, Qt::UserRole + 1);
-        personItem->setEditable(false);
-
-        personItems[personId] = personItem;
-    }
-
-    for (const QVariant& v : ancestors) {
-        QVariantMap map = v.toMap();
-        int personId = map["person_id"].toInt();
-        QString path = map["path"].toString();
-
-        QStringList pathParts = path.split("->");
-        if (pathParts.size() == 2) {
-            rootItem->appendRow(personItems[personId]);
-        } else if (pathParts.size() > 2) {
-            int parentId = pathParts[pathParts.size() - 2].toInt();
-            if (personItems.contains(parentId)) {
-                personItems[parentId]->appendRow(personItems[personId]);
-            }
-        }
-    }
+    m_loadedIds.insert(personId);
+    
+    loadParents(rootItem, personId);
+    rootItem->setData(true, Qt::UserRole + 2);
 
     m_ancestorTreeModel->appendRow(rootItem);
     ui->ancestorTreeView->expandAll();
+}
+
+bool AncestorQueryWidget::checkHasParents(int personId)
+{
+    QSqlQuery query;
+    query.prepare(R"(
+        SELECT f.family_id
+        FROM persons p
+        JOIN families f ON p.birth_family_id = f.family_id
+        WHERE p.person_id = ?
+    )");
+    query.addBindValue(personId);
+    if (query.exec() && query.next()) {
+        return true;
+    }
+    return false;
+}
+
+void AncestorQueryWidget::onItemExpanded(const QModelIndex& index)
+{
+    QStandardItem* item = m_ancestorTreeModel->itemFromIndex(index);
+    if (!item) return;
+
+    bool loaded = item->data(Qt::UserRole + 2).toBool();
+    if (loaded) return;
+
+    int personId = item->data(Qt::UserRole + 1).toInt();
+    
+    item->removeRows(0, item->rowCount());
+    
+    loadParents(item, personId);
+    item->setData(true, Qt::UserRole + 2);
+}
+
+void AncestorQueryWidget::loadParents(QStandardItem* parentItem, int personId)
+{
+    qDebug() << "Loading parents for person:" << personId;
+    
+    QSqlQuery query;
+    query.prepare(R"(
+        SELECT f.husband_id, f.wife_id
+        FROM persons p
+        JOIN families f ON p.birth_family_id = f.family_id
+        WHERE p.person_id = ?
+    )");
+    query.addBindValue(personId);
+    
+    if (query.exec() && query.next()) {
+        int fatherId = query.value(0).toInt();
+        int motherId = query.value(1).toInt();
+        
+        qDebug() << "Found parents - father:" << fatherId << "mother:" << motherId;
+
+        if (fatherId > 0 && !m_loadedIds.contains(fatherId)) {
+            addPersonItem(parentItem, fatherId);
+        }
+        if (motherId > 0 && !m_loadedIds.contains(motherId)) {
+            addPersonItem(parentItem, motherId);
+        }
+    } else {
+        qDebug() << "No parents found or query failed";
+    }
+}
+
+void AncestorQueryWidget::addPersonItem(QStandardItem* parentItem, int personId)
+{
+    QVariantList member = DatabaseManager::instance().getMember(personId);
+    if (member.isEmpty()) {
+        return;
+    }
+
+    QVariantMap map = member.first().toMap();
+    QString name = map["name"].toString();
+    QString genderStr = map["gender"].toString();
+    QChar gender = genderStr.isEmpty() ? 'M' : genderStr.at(0);
+    int generation = map["generation"].toInt();
+
+    QString text = QString("%1 (%2) [%3代]").arg(name).arg(gender == 'M' ? "男" : "女").arg(generation);
+    QStandardItem* personItem = new QStandardItem(text);
+    personItem->setData(personId, Qt::UserRole + 1);
+    personItem->setData(false, Qt::UserRole + 2);
+    personItem->setEditable(false);
+
+    bool hasParents = checkHasParents(personId);
+    if (hasParents) {
+        QStandardItem* placeholder = new QStandardItem("");
+        personItem->appendRow(placeholder);
+    }
+
+    m_loadedIds.insert(personId);
+    parentItem->appendRow(personItem);
 }
 
 void AncestorQueryWidget::onPersonSelected(const QModelIndex& index)

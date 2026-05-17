@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QStandardItemModel>
-#include <QSqlQueryModel>
+#include <QSet>
 
 namespace Ui {
 class AncestorQueryWidget;
@@ -24,15 +24,21 @@ signals:
 
 private slots:
     void onSearchAncestors();
-    void onPersonSelected(const QModelIndex& index);
     void onClearResults();
+    void onPersonSelected(const QModelIndex& index);
+    void onItemExpanded(const QModelIndex& index);
 
 private:
-    void displayAncestorTree(const QVariantList& ancestors);
+    void displayAncestorTree(const QVariantMap& startPerson);
+    void loadParents(QStandardItem* parentItem, int personId);
+    void addPersonItem(QStandardItem* parentItem, int personId);
+    bool checkHasParents(int personId);
 
     Ui::AncestorQueryWidget *ui;
-    int m_currentGenealogyId;
     QStandardItemModel* m_ancestorTreeModel;
+    int m_currentGenealogyId;
+    int m_startPersonId;
+    QSet<int> m_loadedIds;
 };
 
-#endif
+#endif // ANCESTORQUERYWIDGET_H
