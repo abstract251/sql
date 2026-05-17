@@ -28,9 +28,11 @@ private slots:
     void onExpandAll();
     void onCollapseAll();
     void onRefreshTree();
+    void onItemExpanded(const QModelIndex& index);
 
 private:
-    void buildTreeFromRoot(int rootPersonId, QStandardItem* parentItem, int depth = 0);
+    void loadChildren(QStandardItem* parentItem, int parentId);
+    bool checkHasChildren(int personId);
     QStandardItem* createPersonItem(int personId, const QString& name, QChar gender, int generation);
 
     Ui::TreeViewWidget *ui;
