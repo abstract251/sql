@@ -146,8 +146,8 @@ void DashboardWidget::updateStatistics()
         ui->statsTableWidget->setRowCount(0);
     }
 
-    ui->statsTableWidget->setColumnCount(5);
-    ui->statsTableWidget->setHorizontalHeaderLabels({"辈分", "人数", "平均寿命", "最早出生", "最晚出生"});
+    ui->statsTableWidget->setColumnCount(6);
+    ui->statsTableWidget->setHorizontalHeaderLabels({"辈分", "人数", "平均寿命", "最早出生", "最晚出生", "平均出生年份"});
     ui->statsTableWidget->horizontalHeader()->setStretchLastSection(true);
     ui->statsTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->statsTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -162,6 +162,7 @@ void DashboardWidget::updateStatistics()
         ui->statsTableWidget->setItem(row, 2, new QTableWidgetItem(map["avg_lifespan"].toString()));
         ui->statsTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(map["earliest_birth"].toInt())));
         ui->statsTableWidget->setItem(row, 4, new QTableWidgetItem(QString::number(map["latest_birth"].toInt())));
+        ui->statsTableWidget->setItem(row, 5, new QTableWidgetItem(QString::number(map["avg_birth_year"].toInt())));
     }
 
     if (genStats.isEmpty()) {

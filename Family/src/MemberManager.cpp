@@ -163,6 +163,9 @@ void MemberManager::refreshMembers()
 
 void MemberManager::searchMembers(const QString& namePattern, int birthYear, int deathYear, int generation, int memberId)
 {
+    Q_UNUSED(birthYear);
+    Q_UNUSED(deathYear);
+    
     QString selectedSurname = ui->surnameComboBox->currentData().toString();
     
     int currentYear = QDate::currentDate().year();
@@ -170,6 +173,11 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
     int ageMax = ui->ageMaxSpinBox->value();
     int spouseStatus = ui->spouseComboBox->currentIndex();
     int genderIndex = ui->genderComboBox->currentIndex();
+    
+    int birthYearMin = ui->birthYearMinSpinBox->value();
+    int birthYearMax = ui->birthYearMaxSpinBox->value();
+    int deathYearMin = ui->deathYearMinSpinBox->value();
+    int deathYearMax = ui->deathYearMaxSpinBox->value();
     
     QStringList conditions;
     
@@ -189,14 +197,6 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
         conditions.append(QString("name LIKE '%%1%'").arg(namePattern));
     }
     
-    if (birthYear > 0) {
-        conditions.append(QString("birth_year = %1").arg(birthYear));
-    }
-    
-    if (deathYear > 0) {
-        conditions.append(QString("death_year = %1").arg(deathYear));
-    }
-    
     if (generation > 0) {
         conditions.append(QString("generation = %1").arg(generation));
     }
@@ -205,6 +205,22 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
         conditions.append("gender = 'M'");
     } else if (genderIndex == 2) {
         conditions.append("gender = 'F'");
+    }
+    
+    if (birthYearMin > 0 && birthYearMax > 0) {
+        conditions.append(QString("birth_year BETWEEN %1 AND %2").arg(birthYearMin).arg(birthYearMax));
+    } else if (birthYearMin > 0) {
+        conditions.append(QString("birth_year >= %1").arg(birthYearMin));
+    } else if (birthYearMax > 0) {
+        conditions.append(QString("birth_year <= %1").arg(birthYearMax));
+    }
+    
+    if (deathYearMin > 0 && deathYearMax > 0) {
+        conditions.append(QString("death_year BETWEEN %1 AND %2 AND death_year > 0").arg(deathYearMin).arg(deathYearMax));
+    } else if (deathYearMin > 0) {
+        conditions.append(QString("death_year >= %1 AND death_year > 0").arg(deathYearMin));
+    } else if (deathYearMax > 0) {
+        conditions.append(QString("death_year <= %1 AND death_year > 0").arg(deathYearMax));
     }
     
     if (ageMin > 0) {
@@ -483,12 +499,10 @@ void MemberManager::onDeleteMember()
 void MemberManager::onSearchButtonClicked()
 {
     QString namePattern = ui->searchLineEdit->text().trimmed();
-    int birthYear = ui->birthYearLineEdit->text().trimmed().toInt();
-    int deathYear = ui->deathYearLineEdit->text().trimmed().toInt();
     int generation = ui->generationLineEdit->text().trimmed().toInt();
     int memberId = ui->idLineEdit->text().trimmed().toInt();
     
-    searchMembers(namePattern, birthYear, deathYear, generation, memberId);
+    searchMembers(namePattern, 0, 0, generation, memberId);
 }
 
 void MemberManager::onMemberTableClicked(const QModelIndex& index)
@@ -510,10 +524,12 @@ void MemberManager::onClearSearch()
 {
     ui->idLineEdit->clear();
     ui->searchLineEdit->clear();
-    ui->birthYearLineEdit->clear();
-    ui->deathYearLineEdit->clear();
     ui->generationLineEdit->clear();
     ui->genderComboBox->setCurrentIndex(0);
+    ui->birthYearMinSpinBox->setValue(0);
+    ui->birthYearMaxSpinBox->setValue(0);
+    ui->deathYearMinSpinBox->setValue(0);
+    ui->deathYearMaxSpinBox->setValue(0);
     ui->ageMinSpinBox->setValue(0);
     ui->ageMaxSpinBox->setValue(0);
     ui->spouseComboBox->setCurrentIndex(0);

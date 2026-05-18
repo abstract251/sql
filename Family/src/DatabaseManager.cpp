@@ -829,7 +829,8 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
                 COUNT(*) as count,
                 COALESCE(ROUND(AVG(death_year - birth_year) FILTER (WHERE death_year IS NOT NULL AND death_year > 0), 1), 0) as avg_lifespan,
                 MIN(birth_year) as earliest_birth,
-                MAX(birth_year) as latest_birth
+                MAX(birth_year) as latest_birth,
+                COALESCE(ROUND(AVG(birth_year)), 0) as avg_birth_year
             FROM persons
             WHERE genealogy_id = ?
             GROUP BY generation
@@ -843,7 +844,8 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
                 COUNT(*) as count,
                 COALESCE(ROUND(AVG(death_year - birth_year) FILTER (WHERE death_year IS NOT NULL AND death_year > 0), 1), 0) as avg_lifespan,
                 MIN(birth_year) as earliest_birth,
-                MAX(birth_year) as latest_birth
+                MAX(birth_year) as latest_birth,
+                COALESCE(ROUND(AVG(birth_year)), 0) as avg_birth_year
             FROM persons
             GROUP BY generation
             ORDER BY generation
@@ -857,6 +859,7 @@ QVariantList DatabaseManager::getGenerationStats(int genealogyId)
             map["avg_lifespan"] = query.value(2).toString();
             map["earliest_birth"] = query.value(3);
             map["latest_birth"] = query.value(4);
+            map["avg_birth_year"] = query.value(5);
             result.append(map);
         }
     }
