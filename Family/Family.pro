@@ -29,6 +29,8 @@ SOURCES += \
     src/TreeViewWidget.cpp \
     src/AncestorQueryWidget.cpp \
     src/RelationshipQueryWidget.cpp \
+    src/SpouseQueryWidget.cpp \
+    src/ChildrenQueryWidget.cpp \
     src/HelpDialog.cpp
 
 # Header files
@@ -46,6 +48,8 @@ HEADERS += \
     include/TreeViewWidget.h \
     include/AncestorQueryWidget.h \
     include/RelationshipQueryWidget.h \
+    include/SpouseQueryWidget.h \
+    include/ChildrenQueryWidget.h \
     include/HelpDialog.h
 
 # UI files
@@ -57,6 +61,8 @@ FORMS += \
     ui/tree_view_widget.ui \
     ui/ancestor_query_widget.ui \
     ui/relationship_query_widget.ui \
+    ui/spouse_query_widget.ui \
+    ui/children_query_widget.ui \
     ui/mainwindow.ui
 
 # Resources

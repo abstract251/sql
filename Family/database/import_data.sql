@@ -41,27 +41,27 @@ ALTER SEQUENCE users_user_id_seq RESTART WITH 1;
 
 -- 1. 导入 users（用户表）
 COPY users(user_id, username, password_hash, email, created_at)
-FROM 'e:/Desktop/sql_work/Family/database/csv_data/users.csv'
+FROM 'e:/DevelopProjects/DatabaseLab/code/Family/database/csv_data/users.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 2. 导入 genealogies（族谱表）
 COPY genealogies(genealogy_id, name, surname, compile_time, description, creator_id)
-FROM 'e:/Desktop/sql_work/Family/database/csv_data/genealogies.csv'
+FROM 'e:/DevelopProjects/DatabaseLab/code/Family/database/csv_data/genealogies.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 3. 导入 persons（成员表）
 COPY persons(person_id, name, gender, birth_year, death_year, biography, generation, genealogy_id, birth_family_id)
-FROM 'e:/Desktop/sql_work/Family/database/csv_data/persons.csv'
+FROM 'e:/DevelopProjects/DatabaseLab/code/Family/database/csv_data/persons.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 4. 导入 families（家庭表）
 COPY families(family_id, husband_id, wife_id, genealogy_id, marriage_year)
-FROM 'e:/Desktop/sql_work/Family/database/csv_data/families.csv'
+FROM 'e:/DevelopProjects/DatabaseLab/code/Family/database/csv_data/families.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- 5. 导入 user_genealogy（用户-族谱关联表）
 COPY user_genealogy(user_id, genealogy_id, role)
-FROM 'e:/Desktop/sql_work/Family/database/csv_data/user_genealogy.csv'
+FROM 'e:/DevelopProjects/DatabaseLab/code/Family/database/csv_data/user_genealogy.csv'
 WITH (FORMAT csv, HEADER true, NULL '');
 
 -- =====================================================

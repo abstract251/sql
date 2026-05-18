@@ -13,6 +13,8 @@ class MemberManager;
 class TreeViewWidget;
 class AncestorQueryWidget;
 class RelationshipQueryWidget;
+class SpouseQueryWidget;
+class ChildrenQueryWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -54,6 +56,8 @@ private:
     TreeViewWidget* m_treeViewWidget;
     AncestorQueryWidget* m_ancestorQueryWidget;
     RelationshipQueryWidget* m_relationshipQueryWidget;
+    SpouseQueryWidget* m_spouseQueryWidget;
+    ChildrenQueryWidget* m_childrenQueryWidget;
 };
 
 #endif

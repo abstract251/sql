@@ -16,9 +16,10 @@ TreeViewWidget::TreeViewWidget(int genealogyId, QWidget *parent)
     ui->setupUi(this);
 
     m_treeModel = new QStandardItemModel(this);
+    m_treeModel->setHorizontalHeaderLabels(QStringList() << "成员");
     ui->treeView->setModel(m_treeModel);
-    ui->treeView->setHeaderHidden(false);
-    ui->treeView->setAnimated(true);
+    ui->treeView->setHeaderHidden(true);  // 隐藏表头
+    ui->treeView->setAnimated(false);  // 禁用动画，避免索引问题
     ui->treeView->setIndentation(20);
 
     connect(ui->refreshPushButton, &QPushButton::clicked, this, &TreeViewWidget::onRefreshTree);
@@ -139,17 +140,34 @@ bool TreeViewWidget::checkHasChildren(int personId)
 
 void TreeViewWidget::onItemExpanded(const QModelIndex& index)
 {
-    QStandardItem* item = m_treeModel->itemFromIndex(index);
-    if (!item) return;
-
-    bool loaded = item->data(Qt::UserRole + 2).toBool();
-    if (loaded) return;
-
-    int personId = item->data(Qt::UserRole + 1).toInt();
+    if (!index.isValid()) return;
     
-    item->removeRows(0, item->rowCount());
-    loadChildren(item, personId);
+    // 先检查是否已加载
+    QVariant loadedData = index.data(Qt::UserRole + 2);
+    if (loadedData.isValid() && loadedData.toBool()) {
+        return;
+    }
+    
+    QVariant personIdData = index.data(Qt::UserRole + 1);
+    if (!personIdData.isValid()) {
+        return;
+    }
+    int personId = personIdData.toInt();
+    
+    QStandardItem* item = m_treeModel->itemFromIndex(index);
+    if (!item) {
+        return;
+    }
+    
+    // 先标记为已加载，防止递归
     item->setData(true, Qt::UserRole + 2);
+    
+    // 清空内容 - 使用更安全的方式
+    if (item->rowCount() > 0) {
+        item->removeRows(0, item->rowCount());
+    }
+    
+    loadChildren(item, personId);
 }
 
 QStandardItem* TreeViewWidget::createPersonItem(int personId, const QString& name, QChar gender, int generation)

@@ -6,6 +6,8 @@
 #include "TreeViewWidget.h"
 #include "AncestorQueryWidget.h"
 #include "RelationshipQueryWidget.h"
+#include "SpouseQueryWidget.h"
+#include "ChildrenQueryWidget.h"
 #include "DatabaseManager.h"
 #include "HelpDialog.h"
 #include "ui_mainwindow.h"
@@ -30,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_treeViewWidget(nullptr)
     , m_ancestorQueryWidget(nullptr)
     , m_relationshipQueryWidget(nullptr)
+    , m_spouseQueryWidget(nullptr)
+    , m_childrenQueryWidget(nullptr)
 {
     setupUi();
     showLoginDialog();
@@ -181,6 +185,12 @@ void MainWindow::onLoginSuccess(const User& user)
 
     m_relationshipQueryWidget = new RelationshipQueryWidget(firstGenealogyId, this);
     m_centralTabWidget->addTab(m_relationshipQueryWidget, "亲缘关系");
+
+    m_spouseQueryWidget = new SpouseQueryWidget(firstGenealogyId, this);
+    m_centralTabWidget->addTab(m_spouseQueryWidget, "配偶查询");
+
+    m_childrenQueryWidget = new ChildrenQueryWidget(firstGenealogyId, this);
+    m_centralTabWidget->addTab(m_childrenQueryWidget, "子女查询");
 
     statusBar()->showMessage(QString("欢迎, %1!").arg(user.username()), 3000);
     
