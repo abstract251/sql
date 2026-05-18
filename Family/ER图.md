@@ -1,4 +1,5 @@
 ```mermaid
+
 erDiagram
     User {
         int user_id PK
@@ -34,7 +35,6 @@ erDiagram
         int husband_id FK
         int wife_id FK
         int genealogy_id FK
-        int marriage_year
     }
 
     User_Genealogy {
@@ -44,11 +44,12 @@ erDiagram
         timestamp joined_at
     }
 
-    User ||--o{ Genealogy : "creates"
-    User ||--o{ User_Genealogy : "participates"
-    Genealogy ||--o{ User_Genealogy : "has"
-    Genealogy ||--o{ Person : "includes"
-    Person }o--|| Family : "born in (birth_family)"
+    User ||--o{ Genealogy : creates
+    User ||--o{ User_Genealogy : participates
+    Genealogy ||--o{ User_Genealogy : has
+    Genealogy ||--o{ Person : includes
+    Person }o--|| Family : "born in"
     Person ||--o{ Family : "as husband"
     Person ||--o{ Family : "as wife"
+
 ```
