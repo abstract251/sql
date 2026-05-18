@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QDateEdit>
+#include <QDate>
 #include <QDialogButtonBox>
 #include <QComboBox>
 #include <QSqlQuery>
@@ -164,6 +165,12 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
 {
     QString selectedSurname = ui->surnameComboBox->currentData().toString();
     
+    int currentYear = QDate::currentDate().year();
+    int ageMin = ui->ageMinSpinBox->value();
+    int ageMax = ui->ageMaxSpinBox->value();
+    int spouseStatus = ui->spouseComboBox->currentIndex();
+    int genderIndex = ui->genderComboBox->currentIndex();
+    
     QStringList conditions;
     
     if (m_currentGenealogyId > 0) {
@@ -194,6 +201,35 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
         conditions.append(QString("generation = %1").arg(generation));
     }
     
+    if (genderIndex == 1) {
+        conditions.append("gender = 'M'");
+    } else if (genderIndex == 2) {
+        conditions.append("gender = 'F'");
+    }
+    
+    if (ageMin > 0) {
+        int birthYearMax = currentYear - ageMin;
+        conditions.append(QString("birth_year <= %1").arg(birthYearMax));
+    }
+    
+    if (ageMax > 0) {
+        conditions.append(QString(
+            "(CASE WHEN death_year > 0 THEN death_year - birth_year ELSE %1 - birth_year END) <= %2"
+        ).arg(currentYear).arg(ageMax));
+    }
+    
+    if (spouseStatus == 1) {
+        conditions.append(QString(
+            "person_id IN (SELECT husband_id FROM families WHERE husband_id IS NOT NULL) OR "
+            "person_id IN (SELECT wife_id FROM families WHERE wife_id IS NOT NULL)"
+        ));
+    } else if (spouseStatus == 2) {
+        conditions.append(QString(
+            "person_id NOT IN (SELECT husband_id FROM families WHERE husband_id IS NOT NULL) AND "
+            "person_id NOT IN (SELECT wife_id FROM families WHERE wife_id IS NOT NULL)"
+        ));
+    }
+    
     QString whereClause;
     if (!conditions.isEmpty()) {
         whereClause = "WHERE " + conditions.join(" AND ");
@@ -213,7 +249,9 @@ void MemberManager::searchMembers(const QString& namePattern, int birthYear, int
         LIMIT 500
     )").arg(whereClause);
 
-    m_memberModel->setQuery(queryStr);
+    QSqlQuery query(DatabaseManager::instance().database());
+    query.exec(queryStr);
+    m_memberModel->setQuery(query);
     ui->memberTableView->resizeColumnsToContents();
 }
 
@@ -475,6 +513,10 @@ void MemberManager::onClearSearch()
     ui->birthYearLineEdit->clear();
     ui->deathYearLineEdit->clear();
     ui->generationLineEdit->clear();
+    ui->genderComboBox->setCurrentIndex(0);
+    ui->ageMinSpinBox->setValue(0);
+    ui->ageMaxSpinBox->setValue(0);
+    ui->spouseComboBox->setCurrentIndex(0);
     refreshMembers();
 }
 
